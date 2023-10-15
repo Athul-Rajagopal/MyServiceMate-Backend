@@ -17,7 +17,9 @@ class Services(models.Model):
 class CustomUser(AbstractUser):
     is_worker = models.BooleanField(default=False)
     phone = models.CharField(max_length=50,blank=True)
-    # location = models.ForeignKey(Locations,on_delete=models.CASCADE)
+    is_approved = models.BooleanField(default=False)
+    is_user = models.BooleanField(default=True)
+    is_profile_created = models.BooleanField(default=False)
     
     groups = models.ManyToManyField(
         'auth.Group',
@@ -33,6 +35,11 @@ class CustomUser(AbstractUser):
     def __str__(self):
         return f"{self.username}-{self.email}"
     
+    
+class WorkerDetails(models.Model):
+    worker = models.OneToOneField(CustomUser,on_delete=models.CASCADE)
+    Location = models.OneToOneField(Locations,on_delete=models.CASCADE)
+    phone = models.CharField(max_length=12,null=True)
 
 # class WorkDetails(models.Model):
 #     user = models.ForeignKey(CustomUser)
@@ -59,10 +66,7 @@ class FielfOfExpertise(models.Model):
 #     work_details = models.ForeignKey(WorkDetails)
 #     comments = models.TextField()
 
-class StoreOtp(models.Model):
-    user = models.ForeignKey(CustomUser,on_delete=models.CASCADE)
-    otp = models.IntegerField()
     
 class Otpstore(models.Model):
-    user = models.ForeignKey(CustomUser,on_delete=models.CASCADE)
+    user = models.OneToOneField(CustomUser,on_delete=models.CASCADE)
     otp = models.IntegerField()

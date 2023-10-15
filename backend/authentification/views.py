@@ -16,6 +16,8 @@ from django.core.mail import send_mail
 from backend import settings
 from rest_framework import permissions
 from rest_framework.permissions import IsAuthenticated
+from django.shortcuts import get_object_or_404
+
 
 
 
@@ -36,80 +38,52 @@ class CustomTokenObtainPairView(TokenObtainPairView):
         response.data['username'] = user.username
         response.data['id'] = user.id
         response.data['access_token'] = access_token
+        response.data['is_user'] = user.is_user
+        response.data['is_approved'] = user.is_approved
+        response.data['is_profile_created'] = user.is_profile_created
+        response.data['is_active'] = user.is_active
         print(response.data)
         return response
     
     
 class RegitrationView(APIView):
     
-    # def post(self, request):
-    #     print(request.data)
-    #     # if User.objects.filter(username=request.data['username']).exists():
-    #     #     return Response({'error': 'Username already exists'}, status=status.HTTP_400_BAD_REQUEST)
-    #     # if User.objects.filter(email=request.data['email']).exists():
-    #     #     return Response({'error': 'Email already exists'}, status=status.HTTP_400_BAD_REQUEST)
-    #     serializer = UserSerializers(data=request.data)
-    #     serializer.is_valid(raise_exception=True)
-    #     username = serializer.validated_data.get('username')
-    #     email = serializer.validated_data.get('email')
-    #     password = serializer.validated_data.get('password')
-    #     is_worker = serializer.validated_data.get('is_worker')
-     
-    #     if serializer.is_valid():
     def post(self, request):
-        data = request.data
-        username = data.get('username')
-        email = data.get('email')
-        password = data.get('password')
-        is_worker = data.get('is_worker')
-
-        # Perform manual data validation
-        # if not username or not email or not password:
-        #     return Response({'error': 'Username, email, and password are required.'}, status=status.HTTP_400_BAD_REQUEST)
-
-        # if CustomUser.objects.filter(username=username).exists():
+        print(request.data)
+        # if User.objects.filter(username=request.data['username']).exists():
         #     return Response({'error': 'Username already exists'}, status=status.HTTP_400_BAD_REQUEST)
-
-        # if CustomUser.objects.filter(email=email).exists():
+        # if User.objects.filter(email=request.data['email']).exists():
         #     return Response({'error': 'Email already exists'}, status=status.HTTP_400_BAD_REQUEST)
-
-        print("here")
-        # print(serializer.validated_data)
-        # request.session['registration_data'] = serializer.validated_data
-        # print(request.session['registration_data'])
-        user = CustomUser.objects.create_user(username=username, email=email, password=password, is_worker=is_worker)
-        user.is_active = False
-        user.save
-        otp = get_random_string(length=4, allowed_chars='1234567890')
-        print(otp)
-        expiry = datetime.now() + timedelta(minutes=5)  # OTP expires in 5 minutes
-        stored_otp = Otpstore.objects.create(user=user,otp = otp)
+        serializer = UserSerializers(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        username = serializer.validated_data.get('username')
+        email = serializer.validated_data.get('email')
+        password = serializer.validated_data.get('password')
+        is_worker = serializer.validated_data.get('is_worker')
         
-        # request.session['otp'] = otp
-        # request.session['otp_expiry'] = expiry.strftime('%Y-%m-%d %H:%M:%S')
-        # email = serializer.validated_data.get('email')
-        # print(request.session['otp'])
-
-        print(email)
-
-
-        # request.session.save()
-        
-        # print("RegistrationView - Setting session data:", request.session.get('registration_data'))
-        # print("RegistrationView - Setting session data:", request.session.get('otp'))
-
-
-        subject = 'OTP verification'
-        message = f'Hello {username},\n\n' \
-                    f'Please use the following OTP to verify your email: {otp}\n\n' \
-                    f'Thank you!'
-        from_email = settings.EMAIL_HOST_USER
-        recipient_list = [email]
-
-        # Send the email
-        send_mail(subject, message, from_email, recipient_list)
-        return Response({'message': 'OTP sent successfully'}, status=status.HTTP_200_OK)
-
+        print(username,email,password,is_worker)
+     
+        if serializer.is_valid():
+            print('###########################################')
+            user = serializer.save()
+            
+            # otp creation
+            otp = get_random_string(length=4, allowed_chars='1234567890')
+            print(otp)
+            expiry = datetime.now() + timedelta(minutes=5)  # OTP expires in 5 minutes
+            user_object = get_object_or_404(CustomUser, username=user.username)
+            stored_otp = Otpstore.objects.create(user=user_object, otp = otp)
+            
+            # otp sending via mail
+            subject = 'OTP verification'
+            message = f'Hello {username},\n\n' \
+                        f'Please use the following OTP to verify your email: {otp}\n\n' \
+                        f'Thank you!'
+            from_email = settings.EMAIL_HOST_USER
+            recipient_list = [email]
+            
+            send_mail(subject, message, from_email, recipient_list)
+            return Response({'message': 'OTP sent successfully'}, status=status.HTTP_200_OK)
 
     
 class OTPVerificationView(APIView):
@@ -137,9 +111,9 @@ class OTPVerificationView(APIView):
             user.is_active = True
             # Save the user
             user.save()
-            stored_otp.delete()
-            stored_otp.save()
             
+            # delete otp from db
+            stored_otp.delete()
 
             return Response({'message': 'Registration successful','is_worker':user.is_worker}, status=status.HTTP_200_OK)
         else:
@@ -178,3 +152,4 @@ class LogoutView(APIView):
         except Exception as e:
             print("Error:", e)
             return Response(status=status.HTTP_400_BAD_REQUEST)
+        
