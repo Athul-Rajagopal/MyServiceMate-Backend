@@ -25,24 +25,24 @@ class WorkerLocationUpdateView(generics.CreateAPIView):
     serializer_class = WorkerDetailsUpdateLocationSerializer
 
     def create(self, request, *args, **kwargs):
-        
         permission_classes = [IsAuthenticated]
-        # Get the user making the request
         user = self.request.user
-
-        # Get the new location from the request data
         new_location = int(request.data.get('Location'))
-        
-        
-        print(user, new_location, type(new_location))
-        
-        location = get_object_or_404(Locations, id = new_location)
 
-        # Create a new WorkerDetails instance with the worker and location
-        worker_details = WorkerDetails.objects.create(worker=user, Location=location)
+        # Check if a WorkerDetails instance with the same worker and Location exists
+        worker_details = WorkerDetails.objects.filter(worker=user, Location=new_location).first()
 
-        # Serialize the newly created instance
-        serializer = self.get_serializer(worker_details)
+        if worker_details:
+            # If an instance already exists, you might want to update it instead of creating a new one
+            # Update worker_details here
+            serializer = self.get_serializer(worker_details)
+        else:
+            # Create a new WorkerDetails instance with the worker and location
+            location = get_object_or_404(Locations, id=new_location)
+            worker_details = WorkerDetails.objects.create(worker=user, Location=location)
+
+            # Serialize the newly created instance
+            serializer = self.get_serializer(worker_details)
 
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     

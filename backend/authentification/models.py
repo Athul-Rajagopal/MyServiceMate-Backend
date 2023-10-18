@@ -38,7 +38,7 @@ class CustomUser(AbstractUser):
     
 class WorkerDetails(models.Model):
     worker = models.OneToOneField(CustomUser,on_delete=models.CASCADE)
-    Location = models.OneToOneField(Locations,on_delete=models.CASCADE)
+    Location = models.ForeignKey(Locations,on_delete=models.CASCADE)
     phone = models.CharField(max_length=12,null=True)
 
 # class WorkDetails(models.Model):

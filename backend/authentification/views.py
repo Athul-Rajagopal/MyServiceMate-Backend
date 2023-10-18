@@ -30,7 +30,6 @@ class CustomTokenObtainPairView(TokenObtainPairView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.user
-        print(user)
         refresh = RefreshToken.for_user(user)
         access_token = str(response.data['access'])
         response.data['admin'] = user.is_superuser
@@ -42,14 +41,14 @@ class CustomTokenObtainPairView(TokenObtainPairView):
         response.data['is_approved'] = user.is_approved
         response.data['is_profile_created'] = user.is_profile_created
         response.data['is_active'] = user.is_active
-        print(response.data)
+
         return response
     
     
 class RegitrationView(APIView):
     
     def post(self, request):
-        print(request.data)
+
         # if User.objects.filter(username=request.data['username']).exists():
         #     return Response({'error': 'Username already exists'}, status=status.HTTP_400_BAD_REQUEST)
         # if User.objects.filter(email=request.data['email']).exists():
@@ -64,16 +63,14 @@ class RegitrationView(APIView):
         print(username,email,password,is_worker)
      
         if serializer.is_valid():
-            print('###########################################')
             user = serializer.save()
-            
+
             # otp creation
             otp = get_random_string(length=4, allowed_chars='1234567890')
-            print(otp)
             expiry = datetime.now() + timedelta(minutes=5)  # OTP expires in 5 minutes
             user_object = get_object_or_404(CustomUser, username=user.username)
             stored_otp = Otpstore.objects.create(user=user_object, otp = otp)
-            
+        
             # otp sending via mail
             subject = 'OTP verification'
             message = f'Hello {username},\n\n' \
@@ -90,31 +87,22 @@ class OTPVerificationView(APIView):
     def post(self, request):
         # Extract OTP entered by the user
         entered_otp = request.data.get('otp')
-        print('#####################################')
-        print(entered_otp)
         entered_otp = int(entered_otp)
         username = request.data.get('user')
-        print(username)
 
         # Retrieve the stored OTP from the session
         user = CustomUser.objects.get(username=username)
-        print(user)
         stored_otp = Otpstore.objects.get(user=user)
-        print(stored_otp.otp)
-        
-
 
         if entered_otp == stored_otp.otp:
             # OTP is valid, proceed with user registration
-            print('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@')
-
+            
             user.is_active = True
             # Save the user
             user.save()
             
             # delete otp from db
             stored_otp.delete()
-
             return Response({'message': 'Registration successful','is_worker':user.is_worker}, status=status.HTTP_200_OK)
         else:
             # OTP is invalid
