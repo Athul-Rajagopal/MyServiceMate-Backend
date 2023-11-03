@@ -1,6 +1,6 @@
 from rest_framework_simplejwt.serializers import TokenRefreshSerializer
 from rest_framework import serializers
-from .models import CustomUser,Locations,Services,WorkerDetails,FielfOfExpertise
+from .models import CustomUser,Locations,Services,WorkerDetails,FielfOfExpertise,ServiceLocation,Bookings
 
 
 
@@ -36,6 +36,12 @@ class ServicesSerializer(serializers.ModelSerializer):
         fields = '__all__'
         
         
+class ServiceLocationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ServiceLocation
+        fields = '__all__'
+        
+        
 
 # worker details      
 class WorkerDetailsSerializer(serializers.ModelSerializer):
@@ -47,7 +53,11 @@ class WorkerDetailsSerializer(serializers.ModelSerializer):
         fields = ('phone', 'Location', 'services')
   
   
-
+class BookingSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(source='user.username', read_only=True)
+    class Meta:
+        model = Bookings
+        fields = ['id', 'user', 'username','contact_address', 'issue', 'date', 'is_accepted','is_completed','is_rejected',]
 
 
         
@@ -66,6 +76,3 @@ class WorkerDetailsUpdatePhoneNumberSerializer(serializers.ModelSerializer):
         model = WorkerDetails
         fields = ['phone']
     
-
-# worker details
-

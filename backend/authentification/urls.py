@@ -10,5 +10,9 @@ urlpatterns = [
     path('token/refresh/', jwt_views.TokenRefreshView.as_view(), name ='token_refresh'),    
     path('locations/', LocationsList.as_view(), name='locations-list'),
     path('services/<int:location_id>/', ServicesByLocationList.as_view(), name='services-by-location'),
-    path('signout/',LogoutView.as_view(), name='signout')
+    path('signout/',LogoutView.as_view(), name='signout'),
+    path('worker-list/',WorkerListingView.as_view(), name='worker-list'),
+    path('worker-bookings/<int:worker_id>/', WorkerBookingsList.as_view(), name='worker-bookings'),
+    path('submit-booking', CreateBookings.as_view(), name='submit_booking'),
+    path('bookings/<int:user_id>/',ListBookings.as_view(), name='bookings'),
 ]

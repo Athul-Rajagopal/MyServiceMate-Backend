@@ -8,5 +8,8 @@ urlpatterns = [
     path('set-field-of-expertice/',SetFieldOfExpertice.as_view(), name='set_field_of_expertice'),
     path('edit-phone-number/',EditWorkerPhoneNumber.as_view(), name='edit_phone_number'),
     path('worker-profile/', ViewWorkerProfile.as_view(), name='worker_profile'),
+    path('pending-bookings/<int:worker_id>/',WorkerPendingBookingsList.as_view(), name='worker_pending_bookings'),
+    path('incompleted-bookings/<int:worker_id>/',WorkerIncompleteBookingsList.as_view(), name='worker_pending_bookings'),
+    path('accept-booking/<int:booking_id>/',AcceptBookings.as_view(), name='accept_bookings'),
 
 ]

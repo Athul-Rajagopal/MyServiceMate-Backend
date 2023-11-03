@@ -1,6 +1,6 @@
 from django.shortcuts import render
-from authentification.serializer import ServicesSerializer,FieldOfExperticeSerializer,WorkerDetailsUpdateLocationSerializer,WorkerDetailsUpdatePhoneNumberSerializer
-from authentification.models import Services,WorkerDetails,CustomUser,FielfOfExpertise,Locations
+from authentification.serializer import ServicesSerializer,FieldOfExperticeSerializer,WorkerDetailsUpdateLocationSerializer,WorkerDetailsUpdatePhoneNumberSerializer,BookingSerializer
+from authentification.models import Services,WorkerDetails,CustomUser,FielfOfExpertise,Locations,Bookings,WorkerBookings
 from rest_framework.views import APIView
 from rest_framework import generics
 from rest_framework.response import Response
@@ -128,3 +128,43 @@ class ViewWorkerProfile(APIView):
         print(serialized_data)
 
         return JsonResponse({'data': serialized_data}, safe=False)
+    
+    
+class WorkerPendingBookingsList(generics.ListAPIView):
+    serializer_class = BookingSerializer
+
+    def get_queryset(self):
+        worker_id = self.kwargs['worker_id']
+        # Filter bookings by worker_id and is_accepted status
+        worker = CustomUser.objects.get(id=worker_id)
+        bookings = WorkerBookings.objects.filter(worker = worker).values('bookings')
+        return Bookings.objects.filter(id__in=bookings, is_accepted=False)
+
+   
+class WorkerIncompleteBookingsList(generics.ListAPIView):
+    serializer_class = BookingSerializer
+
+    def get_queryset(self):
+        worker_id = self.kwargs['worker_id']
+        # Filter bookings by worker_id and is_accepted status
+        worker = CustomUser.objects.get(id=worker_id)
+        bookings = WorkerBookings.objects.filter(worker = worker).values('bookings')
+        return Bookings.objects.filter(id__in=bookings, is_accepted=True,is_completed=False)
+   
+    
+class AcceptBookings(APIView):
+    
+    def post(self, request, booking_id):
+        
+        booking = Bookings.objects.get(id=booking_id)
+        if booking.is_accepted:
+            return Response({'error': 'Booking has already been accepted'}, status=status.HTTP_BAD_REQUEST)
+        
+        booking.is_accepted = True
+        booking.save()
+        
+        serializer = BookingSerializer(booking)
+        return Response(serializer.data)
+    
+    
+    

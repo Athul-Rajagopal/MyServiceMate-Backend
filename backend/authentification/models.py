@@ -5,14 +5,20 @@ from django.contrib.auth.models import AbstractUser
 
 class Locations(models.Model):
     locations = models.CharField(max_length=50)
+    latitude = models.FloatField(null=True,blank=True)
+    longitude = models.FloatField(null=True,blank=True)
+    
+    def __str__(self):
+        return self.locations
     
     
 class Services(models.Model):
     services = models.CharField(max_length=50)
-    locations = models.ForeignKey(Locations,on_delete=models.CASCADE)
     image = models.ImageField(upload_to = 'media/service_images/',blank=True)
 
-
+class ServiceLocation(models.Model):
+    services = models.ForeignKey(Services, on_delete=models.CASCADE)
+    locations = models.ForeignKey(Locations, on_delete=models.CASCADE)
 
 class CustomUser(AbstractUser):
     is_worker = models.BooleanField(default=False)
@@ -36,11 +42,29 @@ class CustomUser(AbstractUser):
         return f"{self.username}-{self.email}"
     
     
+class Bookings(models.Model):
+    user = models.ForeignKey(CustomUser,on_delete=models.CASCADE)
+    contact_address = models.TextField()
+    issue = models.TextField()
+    date = models.DateField(auto_now=True)
+    is_accepted = models.BooleanField(default=False)
+    is_completed = models.BooleanField(default=False)
+    is_rejected = models.BooleanField(default=False)
+    
+    def __str__(self):
+        return f'{self.user}-{self.date}'
+    
+    
 class WorkerDetails(models.Model):
     worker = models.OneToOneField(CustomUser,on_delete=models.CASCADE)
     Location = models.ForeignKey(Locations,on_delete=models.CASCADE)
     phone = models.CharField(max_length=12,null=True)
-
+    join_date = models.DateField(auto_now=True,blank=True,null=True)
+    
+class WorkerBookings(models.Model):
+    worker = models.ForeignKey(CustomUser,on_delete=models.CASCADE)
+    bookings = models.ForeignKey(Bookings,on_delete=models.CASCADE)
+    
 # class WorkDetails(models.Model):
 #     user = models.ForeignKey(CustomUser)
 #     service = models.ForeignKey(Services)
@@ -61,12 +85,15 @@ class FielfOfExpertise(models.Model):
 #     work_details = models.ForeignKey(WorkDetails,on_delete=models.CASCADE)
 #     worker = models.ForeignKey(CustomUser,on_delete=models.CASCADE)
     
-# class WorkerReview(models.Model):
-#     worker = models.ForeignKey(CustomUser,on_delete=models.CASCADE)
-#     work_details = models.ForeignKey(WorkDetails)
-#     comments = models.TextField()
 
     
 class Otpstore(models.Model):
     user = models.OneToOneField(CustomUser,on_delete=models.CASCADE)
     otp = models.IntegerField()
+    
+# class Review(models.Model):
+#     worker = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+#     user = models.ForeignKey(CustomUser,on_delete=models.CASCADE)
+#     comment = models.TextField()
+#     rating = models.DecimalField(max_digits=3, decimal_places=2)
+#     date = models.DateField()

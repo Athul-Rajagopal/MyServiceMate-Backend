@@ -3,10 +3,10 @@ from rest_framework.views import APIView
 from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework.exceptions import AuthenticationFailed
-from .serializer import UserSerializers,LocationsSerializer, ServicesSerializer
+from .serializer import UserSerializers,LocationsSerializer, ServicesSerializer, ServiceLocationSerializer,BookingSerializer
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
-from .models import CustomUser,Locations, Services, Otpstore
+from .models import CustomUser,Locations, Services, Otpstore, ServiceLocation,WorkerDetails,FielfOfExpertise,Bookings,WorkerBookings
 from rest_framework_simplejwt.views import TokenObtainPairView,TokenRefreshView
 from datetime import timedelta
 from datetime import datetime
@@ -17,6 +17,8 @@ from backend import settings
 from rest_framework import permissions
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
+from math import radians, sin, cos, sqrt, atan2
+from django.http import JsonResponse
 
 
 
@@ -116,14 +118,34 @@ class LocationsList(generics.ListAPIView):
     queryset = Locations.objects.all()
     serializer_class = LocationsSerializer
 
-class ServicesByLocationList(generics.ListAPIView):
-    
-    serializer_class = ServicesSerializer
-    print(serializer_class)
-    def get_queryset(self):
-        location_id = self.kwargs['location_id']
-        return Services.objects.filter(locations=location_id)
-    # permission_classes = [IsAuthenticated]
+
+        
+class ServicesByLocationList(APIView):
+    def get(self,request,location_id):
+        
+        service_location = ServiceLocation.objects.filter(locations=location_id)
+        data = []
+        print(service_location)
+        if service_location:
+            for service_location in service_location:
+            # Access the related service
+                service = service_location.services
+
+                # Prepare the data as a dictionary
+                data_di = {
+                    'id': service.id,
+                    'services': service.services,
+                    'image': service.image.url if service.image else None,
+                }
+                
+                data.append(data_di)
+                
+                print(data)
+
+        return Response(data)
+        # else:
+        #     return Response({'message': 'No services found for the selected location.'}, status=404)
+
     
     
 class LogoutView(APIView):
@@ -141,3 +163,114 @@ class LogoutView(APIView):
             print("Error:", e)
             return Response(status=status.HTTP_400_BAD_REQUEST)
         
+
+class WorkerListingView(APIView):
+    
+    def post(self, request):
+        selected_service = request.data.get("selectedService")
+        selected_location = request.data.get("selectedLocation")
+        
+        print(selected_service,selected_location)
+        
+        service_obj = Services.objects.get(id=int(selected_service))
+        workers = FielfOfExpertise.objects.filter(field=service_obj)
+        
+        location_obj = Locations.objects.get(id=int(selected_location))
+        
+        if location_obj:
+            location_coords = (radians(location_obj.latitude), radians(location_obj.longitude))
+            
+            workers_in_range = []
+            
+            for worker_expertise in workers:
+                worker = worker_expertise.worker  # Get the related worker
+                worker_details = WorkerDetails.objects.get(worker=worker)
+                worker_location_coords = (radians(worker_details.Location.latitude), radians(worker_details.Location.longitude))
+                
+                distance = self.calculate_haversine_distance(location_coords, worker_location_coords)
+                
+                if distance <= 15:  # Within 6 km range
+                    workers_in_range.append({
+                        'worker_id': worker.id,
+                        'worker_name': worker.username,
+                        'distance': distance,
+                    })
+            
+            return JsonResponse(workers_in_range, safe=False)
+        
+        else:
+            return JsonResponse([], safe=False)
+
+    def calculate_haversine_distance(self, coords1, coords2):
+        # Radius of the Earth in kilometers
+        radius = 6371.0
+        
+        lat1, lon1 = coords1
+        lat2, lon2 = coords2
+        
+        dlat = lat2 - lat1
+        dlon = lon2 - lon1
+        
+        a = sin(dlat / 2)**2 + cos(lat1) * cos(lat2) * sin(dlon / 2)**2
+        c = 2 * atan2(sqrt(a), sqrt(1 - a))
+        
+        distance = radius * c
+        return distance
+    
+
+class WorkerBookingsList(generics.ListAPIView):
+    serializer_class = BookingSerializer
+
+    def get_queryset(self):
+        worker_id = self.kwargs['worker_id']  # Assumes the URL pattern has a parameter named 'worker_id'
+        print(worker_id,type(worker_id))
+        # try:
+        worker = CustomUser.objects.get(id=worker_id)
+        bookings = WorkerBookings.objects.filter(worker = worker).values('bookings')
+        
+        print(bookings)
+        return Bookings.objects.filter(id__in=bookings)
+        # except WorkerDetails.DoesNotExist:
+        #     return []
+    
+class CreateBookings(generics.CreateAPIView):
+    serializer_class = BookingSerializer
+    queryset = Bookings
+    
+    def create(self,request,*args, **kwargs):
+        
+        user = self.request.user
+        booking_date = request.data.get('date')
+        user_address = request.data.get('address') 
+        issue = request.data.get('issue')
+        worker_id = request.data.get('workerId')
+        
+        booking = Bookings.objects.create(
+            user=user,
+            contact_address=user_address,
+            issue=issue,
+            date=booking_date,
+        )
+        
+        worker = CustomUser.objects.get(pk=worker_id)
+        WorkerBookings.objects.create(worker=worker, bookings=booking)
+        
+        serializer = BookingSerializer(booking)
+        
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    
+    
+class ListBookings(generics.ListAPIView):
+    serializer_class = BookingSerializer
+    
+    def get_queryset(self):
+        user_id = self.kwargs['user_id']  # Assumes the URL pattern has a parameter named 'worker_id'
+        print(user_id,type(user_id))
+        # try:
+        user = CustomUser.objects.get(id=user_id)
+        bookings = Bookings.objects.filter(user = user)
+        
+        print(bookings)
+        return bookings
+    
+    

@@ -109,22 +109,21 @@ class ServiceCreateView(generics.CreateAPIView):
     serializer_class = ServicesSerializer
 
     def create(self, request, *args, **kwargs):
-        services = request.data.get('services')
-        location_id = request.data.get('location')
-        image = request.data.get('image')
+        # Deserialize the data using the serializer
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
 
-        # Check if the location exists
-        print(request.data)
-        try:
-            location = Locations.objects.get(id=location_id)
-        except Locations.DoesNotExist:
-            return Response({'error': 'Location not found'}, status=status.HTTP_404_NOT_FOUND)
+        # Create a new service
+        service = serializer.save()
 
-        # Create a new Services object
-        service = Services(services=services, locations=location, image=image)
-        service.save()
+        # Add selected locations to the service
+        location_ids = request.data.get('location', [])
+        for location_id in location_ids:
+            location = Locations.objects.get(id = int(location_id))
+            ServiceLocation.objects.create(services=service, locations=location)
 
-        return Response({'message': 'Service created successfully'}, status=status.HTTP_201_CREATED)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
     
      
 class ServiceDeleteView(generics.DestroyAPIView):
