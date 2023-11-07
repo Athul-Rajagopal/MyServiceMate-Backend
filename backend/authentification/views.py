@@ -19,6 +19,8 @@ from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
 from math import radians, sin, cos, sqrt, atan2
 from django.http import JsonResponse
+from .signals import send_worker_notification
+from django.contrib.auth.hashers import make_password
 
 
 
@@ -245,15 +247,20 @@ class CreateBookings(generics.CreateAPIView):
         issue = request.data.get('issue')
         worker_id = request.data.get('workerId')
         
+        # Convert ISO 8601 date to "YYYY-MM-DD" format
+        formatted_date = datetime.fromisoformat(booking_date).strftime("%Y-%m-%d")
+    
         booking = Bookings.objects.create(
             user=user,
             contact_address=user_address,
             issue=issue,
-            date=booking_date,
+            date=formatted_date,
         )
         
         worker = CustomUser.objects.get(pk=worker_id)
         WorkerBookings.objects.create(worker=worker, bookings=booking)
+        
+        send_worker_notification(worker, booking)
         
         serializer = BookingSerializer(booking)
         
@@ -272,5 +279,53 @@ class ListBookings(generics.ListAPIView):
         
         print(bookings)
         return bookings
+  
     
+class ForgotPassword(APIView):
     
+    def post(self,request):
+        
+        username = request.data.get('username')
+        password = request.data.get('password')
+        user_object = CustomUser.objects.get(username=username)
+        
+         # otp creation
+        otp = get_random_string(length=4, allowed_chars='1234567890')
+        expiry = datetime.now() + timedelta(minutes=5)  # OTP expires in 5 minutes
+        stored_otp = Otpstore.objects.create(user=user_object, otp = otp)
+    
+        # otp sending via mail
+        subject = 'OTP verification'
+        message = f'Hello {username},\n\n' \
+                    f'Please use the following OTP to reset your password: {otp}\n\n' \
+                    f'Thank you!'
+        from_email = settings.EMAIL_HOST_USER
+        recipient_list = [user_object.email]
+        
+        send_mail(subject, message, from_email, recipient_list)
+        return Response({'message': 'OTP sent successfully'}, status=status.HTTP_200_OK)
+    
+class PasswordReset(APIView):
+    
+    def post(self,request):
+        
+        entered_otp = request.data.get('otp')
+        entered_otp = int(entered_otp)
+        username = request.data.get('username')
+        password = request.data.get('password')
+        user = CustomUser.objects.get(username=username)
+        stored_otp = Otpstore.objects.get(user=user)
+        
+        if entered_otp == stored_otp.otp:
+            # OTP is valid, proceed with user registration
+            
+            user.password = make_password(password)
+            # Save the user
+            user.save()
+            
+            # delete otp from db
+            stored_otp.delete()
+            return Response({'message': 'Registration successful','is_worker':user.is_worker}, status=status.HTTP_200_OK)
+        else:
+            # OTP is invalid
+            return Response({'error': 'Invalid OTP'}, status=status.HTTP_400_BAD_REQUEST)

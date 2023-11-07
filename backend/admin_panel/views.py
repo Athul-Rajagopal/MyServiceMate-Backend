@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from authentification.serializer import UserSerializers
-from authentification.models import Services,WorkerDetails,CustomUser,FielfOfExpertise,Locations
-from authentification.serializer import UserSerializers,WorkerDetailsSerializer,ServicesSerializer,LocationsSerializer
+from authentification.models import Services,WorkerDetails,CustomUser,FielfOfExpertise,Locations,WorkerBookings,Bookings
+from authentification.serializer import UserSerializers,WorkerDetailsSerializer,ServicesSerializer,LocationsSerializer,BookingSerializer
 from rest_framework.views import APIView
 from rest_framework import generics
 from rest_framework.response import Response
@@ -173,3 +173,38 @@ class BlockUnblockUsers(APIView):
         user.save()
         serializer = UserSerializers(user)
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
+# Booking management
+
+class WorkerBookingsList(generics.ListAPIView):
+    serializer_class = BookingSerializer
+
+    def get_queryset(self):
+        worker_id = self.kwargs['worker_id']
+        # Filter bookings by worker_id and is_accepted status
+        worker = CustomUser.objects.get(id=worker_id)
+        bookings = WorkerBookings.objects.filter(worker = worker).values('bookings')
+        return Bookings.objects.filter(id__in=bookings)
+
+
+
+class UserBookingsList(generics.ListAPIView):
+    serializer_class = BookingSerializer
+
+    def get_queryset(self):
+        user_name = self.kwargs['user_name']
+        user = CustomUser.objects.get(username=user_name)
+        booking_ids = Bookings.objects.filter(user=user).values_list('id', flat=True)
+        worker_bookings = WorkerBookings.objects.filter(bookings__in=booking_ids)
+        worker_ids = worker_bookings.values_list('worker', flat=True).distinct()
+        bookings = Bookings.objects.filter(id__in=booking_ids)
+        return bookings
+
+    def get_worker_names(self, queryset):
+        booking_ids = [booking['id'] for booking in queryset.values('id')]
+        worker_bookings = WorkerBookings.objects.filter(bookings__in=booking_ids)
+        worker_ids = worker_bookings.values_list('worker', flat=True).distinct()
+        worker_names = {}
+        for worker_booking in worker_bookings:
+            worker_names[worker_booking.bookings.id] = worker_booking.worker.username
+        return [worker_names.get(booking_id) for booking_id in booking_ids]

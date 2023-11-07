@@ -9,6 +9,10 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import permissions
 from rest_framework import status
 from django.http import JsonResponse
+from django.core.mail import send_mail
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
+from backend import settings
 
 
 # Create your views here.
@@ -162,6 +166,14 @@ class AcceptBookings(APIView):
         
         booking.is_accepted = True
         booking.save()
+        
+        user = booking.user
+        subject = 'Your Booking Request Has Been Accepted'
+        message = f'Hello {user.username},\n\nYour bookings was successfuly accepted. \n Our representative will contact you soon..'
+        from_email = settings.EMAIL_HOST_USER  # Replace with your from email
+        to = [user.email]
+
+        send_mail(subject,message, from_email, to, fail_silently=False)
         
         serializer = BookingSerializer(booking)
         return Response(serializer.data)

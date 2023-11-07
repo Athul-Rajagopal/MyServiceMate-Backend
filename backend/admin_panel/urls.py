@@ -10,5 +10,7 @@ urlpatterns = [
     path('remove-location/<int:pk>/', RemoveLocationView.as_view(), name='remove-location'),
     path('workers/', GetWorkersList.as_view(), name='workers'),
     path('users/',GetuserList.as_view(), name='users'),
-    path('block-unblock-user/<str:username>/', BlockUnblockUsers.as_view(), name='block-unblock-user')
+    path('block-unblock-user/<str:username>/', BlockUnblockUsers.as_view(), name='block-unblock-user'),
+    path('worker-bookings/<int:worker_id>/',WorkerBookingsList.as_view(), name='worker-bookings'),
+    path('user-bookings/<str:user_name>/',UserBookingsList.as_view(), name='user-bookings'),
 ]

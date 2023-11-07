@@ -1,6 +1,6 @@
 from rest_framework_simplejwt.serializers import TokenRefreshSerializer
 from rest_framework import serializers
-from .models import CustomUser,Locations,Services,WorkerDetails,FielfOfExpertise,ServiceLocation,Bookings
+from .models import CustomUser,Locations,Services,WorkerDetails,FielfOfExpertise,ServiceLocation,Bookings,WorkerBookings
 
 
 
@@ -24,6 +24,9 @@ class UserSerializers(serializers.ModelSerializer):
 
 
 class LocationsSerializer(serializers.ModelSerializer):
+    latitude = serializers.FloatField()
+    longitude = serializers.FloatField()
+    
     class Meta:
         model = Locations
         fields = '__all__'
@@ -55,9 +58,16 @@ class WorkerDetailsSerializer(serializers.ModelSerializer):
   
 class BookingSerializer(serializers.ModelSerializer):
     username = serializers.CharField(source='user.username', read_only=True)
+    worker_name = serializers.SerializerMethodField()
     class Meta:
         model = Bookings
-        fields = ['id', 'user', 'username','contact_address', 'issue', 'date', 'is_accepted','is_completed','is_rejected',]
+        fields = ['id', 'user', 'username','contact_address', 'issue', 'date', 'is_accepted','is_completed','is_rejected','worker_name']
+        
+    def get_worker_name(self, obj):
+        # Retrieve the worker's name associated with the booking
+        worker_booking = WorkerBookings.objects.get(bookings=obj)
+        worker_name = worker_booking.worker.username
+        return worker_name
 
 
         

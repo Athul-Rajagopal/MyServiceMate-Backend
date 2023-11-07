@@ -25,4 +25,5 @@ urlpatterns = [
     path('api/',include('authentification.urls')),
     path('api/',include('worker.urls')),
     path('api/',include('admin_panel.urls')),
+    path('api/',include('chat.urls')),
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -15,4 +15,6 @@ urlpatterns = [
     path('worker-bookings/<int:worker_id>/', WorkerBookingsList.as_view(), name='worker-bookings'),
     path('submit-booking', CreateBookings.as_view(), name='submit_booking'),
     path('bookings/<int:user_id>/',ListBookings.as_view(), name='bookings'),
+    path('forgot-password/',ForgotPassword.as_view(), name='forgot-password'),
+    path('reset-password',PasswordReset.as_view(),name='reset-password'),
 ]

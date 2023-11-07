@@ -46,7 +46,7 @@ class Bookings(models.Model):
     user = models.ForeignKey(CustomUser,on_delete=models.CASCADE)
     contact_address = models.TextField()
     issue = models.TextField()
-    date = models.DateField(auto_now=True)
+    date = models.DateField()
     is_accepted = models.BooleanField(default=False)
     is_completed = models.BooleanField(default=False)
     is_rejected = models.BooleanField(default=False)
