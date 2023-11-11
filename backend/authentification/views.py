@@ -3,10 +3,10 @@ from rest_framework.views import APIView
 from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework.exceptions import AuthenticationFailed
-from .serializer import UserSerializers,LocationsSerializer, ServicesSerializer, ServiceLocationSerializer,BookingSerializer
+from .serializer import UserSerializers,LocationsSerializer, ServicesSerializer, ServiceLocationSerializer,BookingSerializer,ReviewSerializer
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
-from .models import CustomUser,Locations, Services, Otpstore, ServiceLocation,WorkerDetails,FielfOfExpertise,Bookings,WorkerBookings
+from .models import CustomUser,Locations, Services, Otpstore, ServiceLocation,WorkerDetails,FielfOfExpertise,Bookings,WorkerBookings,Review,WorkerReview
 from rest_framework_simplejwt.views import TokenObtainPairView,TokenRefreshView
 from datetime import timedelta
 from datetime import datetime
@@ -26,7 +26,7 @@ from django.contrib.auth.hashers import make_password
 
 
 # Create your views here.
-
+#Registration
 
 class CustomTokenObtainPairView(TokenObtainPairView):
     def post(self, request, *args, **kwargs):
@@ -148,7 +148,7 @@ class ServicesByLocationList(APIView):
         # else:
         #     return Response({'message': 'No services found for the selected location.'}, status=404)
 
-    
+#Logout    
     
 class LogoutView(APIView):
     permission_classes = [IsAuthenticated]
@@ -165,7 +165,7 @@ class LogoutView(APIView):
             print("Error:", e)
             return Response(status=status.HTTP_400_BAD_REQUEST)
         
-
+#Worker listing
 class WorkerListingView(APIView):
     
     def post(self, request):
@@ -217,8 +217,9 @@ class WorkerListingView(APIView):
         c = 2 * atan2(sqrt(a), sqrt(1 - a))
         
         distance = radius * c
-        return distance
+        return distance    
     
+#Booking
 
 class WorkerBookingsList(generics.ListAPIView):
     serializer_class = BookingSerializer
@@ -279,7 +280,8 @@ class ListBookings(generics.ListAPIView):
         
         print(bookings)
         return bookings
-  
+
+#Password  
     
 class ForgotPassword(APIView):
     
@@ -329,3 +331,42 @@ class PasswordReset(APIView):
         else:
             # OTP is invalid
             return Response({'error': 'Invalid OTP'}, status=status.HTTP_400_BAD_REQUEST)
+        
+#Review 
+
+class IsAllowedToAddReview(APIView):
+    def post(self,request):
+        
+        user_id = request.data.get('user_id')
+        worker_id = request.data.get('worker_id')
+        
+        worker = CustomUser.objects.get(id=worker_id)
+        user = CustomUser.objects.get(id=user_id)
+        
+        bookings = WorkerBookings.objects.filter(worker = worker).values('bookings')
+        user_worker_relation = Bookings.objects.filter(id__in=bookings, user=user)
+        
+        if user_worker_relation:
+            return Response({'message': 'valid for giving reviews'},status=status.HTTP_200_OK)
+        else:
+            return Response({'error':'Not have a single booking'},status=status.HTTP_400_BAD_REQUEST)
+        
+class AddReview(generics.CreateAPIView):
+    serializer_class = ReviewSerializer
+    queryset = Review
+
+    def create(self, request, *args, **kwargs):
+        user = self.request.user
+        worker_id = request.data.get('worker_id')
+        comment = request.data.get('comment')
+
+        review = Review.objects.create(
+            user=user,
+            comment=comment,
+        )
+
+        worker = CustomUser.objects.get(pk=worker_id)
+        WorkerReview.objects.create(worker=worker, reviews=review)
+        # Instantiate the serializer with the created review object
+        serializer = ReviewSerializer(review)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)

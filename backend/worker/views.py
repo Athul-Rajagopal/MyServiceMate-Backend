@@ -1,6 +1,6 @@
 from django.shortcuts import render
-from authentification.serializer import ServicesSerializer,FieldOfExperticeSerializer,WorkerDetailsUpdateLocationSerializer,WorkerDetailsUpdatePhoneNumberSerializer,BookingSerializer
-from authentification.models import Services,WorkerDetails,CustomUser,FielfOfExpertise,Locations,Bookings,WorkerBookings
+from authentification.serializer import ServicesSerializer,FieldOfExperticeSerializer,WorkerDetailsUpdateLocationSerializer,WorkerDetailsUpdatePhoneNumberSerializer,BookingSerializer,ReviewSerializer
+from authentification.models import Services,WorkerDetails,CustomUser,FielfOfExpertise,Locations,Bookings,WorkerBookings,Review,WorkerReview
 from rest_framework.views import APIView
 from rest_framework import generics
 from rest_framework.response import Response
@@ -17,7 +17,7 @@ from backend import settings
 
 # Create your views here.
 
-
+#Profile
 class ServiceList(generics.ListAPIView):
     
     queryset = Services.objects.all()
@@ -133,7 +133,7 @@ class ViewWorkerProfile(APIView):
 
         return JsonResponse({'data': serialized_data}, safe=False)
     
-    
+#Booking    
 class WorkerPendingBookingsList(generics.ListAPIView):
     serializer_class = BookingSerializer
 
@@ -142,8 +142,20 @@ class WorkerPendingBookingsList(generics.ListAPIView):
         # Filter bookings by worker_id and is_accepted status
         worker = CustomUser.objects.get(id=worker_id)
         bookings = WorkerBookings.objects.filter(worker = worker).values('bookings')
-        return Bookings.objects.filter(id__in=bookings, is_accepted=False)
+        return Bookings.objects.filter(id__in=bookings, is_accepted=False, is_rejected=False)
+    
+    
+    
+class WorkerPendingBookingsCount(APIView):
 
+    def get(self,request):
+        # worker_id = self.kwargs['worker_id']
+        # Filter bookings by worker_id and is_accepted status
+        worker = request.user
+        bookings = WorkerBookings.objects.filter(worker = worker).values('bookings')
+        return Response( {'count':Bookings.objects.filter(id__in=bookings, is_accepted=False,is_rejected=False).count()},status=status.HTTP_200_OK)
+
+   
    
 class WorkerIncompleteBookingsList(generics.ListAPIView):
     serializer_class = BookingSerializer
@@ -155,6 +167,7 @@ class WorkerIncompleteBookingsList(generics.ListAPIView):
         bookings = WorkerBookings.objects.filter(worker = worker).values('bookings')
         return Bookings.objects.filter(id__in=bookings, is_accepted=True,is_completed=False)
    
+    
     
 class AcceptBookings(APIView):
     
@@ -178,5 +191,28 @@ class AcceptBookings(APIView):
         serializer = BookingSerializer(booking)
         return Response(serializer.data)
     
+
+
+class RejectBookings(APIView):
+    def post(self, request, booking_id):
+        print('##############################3')
+        booking = Bookings.objects.get(id=booking_id)
+        booking.is_rejected = True
+        booking.save()
+
+        serializer = BookingSerializer(booking)
+        return Response(serializer.data)
+
+
+
+class WorkerReviewsList(generics.ListAPIView):
+    serializer_class = ReviewSerializer
+    
+    def get_queryset(self):
+       worker_id = self.kwargs['worker_id']
+       
+       worker = CustomUser.objects.get(id=worker_id)
+       reviews = WorkerReview.objects.filter(worker=worker).values('reviews')
+       return Review.objects.filter(id__in=reviews) 
     
     

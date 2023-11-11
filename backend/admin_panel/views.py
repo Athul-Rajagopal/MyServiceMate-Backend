@@ -10,6 +10,11 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import permissions
 from rest_framework import status
 from django.http import JsonResponse
+from .serializers import BookingStatisticsSerializer,ServiceStatisticsSerializer
+from datetime import datetime, timedelta
+from rest_framework.decorators import api_view
+from django.db.models import Count
+from django.utils import timezone
 # Create your views here.
 
 # worker management
@@ -47,7 +52,10 @@ class WorkerApprovalRequestListView(APIView):
         return JsonResponse({'data': serialized_data}, safe=False)
 
             
-        
+class PendingApprovalRequestCount(APIView):
+    def get(self,request):  
+        approval_requests = CustomUser.objects.filter(is_worker=True, is_approved=False).count()
+        return Response({'count': approval_requests})    
         
 class WorkerApprovalView(APIView):
     def patch(self, request, worker_id):
@@ -208,3 +216,50 @@ class UserBookingsList(generics.ListAPIView):
         for worker_booking in worker_bookings:
             worker_names[worker_booking.bookings.id] = worker_booking.worker.username
         return [worker_names.get(booking_id) for booking_id in booking_ids]
+    
+    
+# Dashboard
+
+@api_view(['GET'])
+def booking_statistics(request):
+    from_date = request.GET.get('from_date', None)
+    to_date = request.GET.get('to_date', None)
+
+    start_date = None
+    end_date = None
+
+    if from_date and to_date:
+        # If both from_date and to_date are provided, filter by the specified date range
+        data = Bookings.objects.filter(date__range=[from_date, to_date])
+        start_date = datetime.strptime(from_date, '%Y-%m-%d')
+        end_date = datetime.strptime(to_date, '%Y-%m-%d') + timedelta(days=1)
+    else:
+        # If no dates are provided, use the last 7 days as a default
+        end_date = timezone.now()
+        start_date = end_date - timedelta(days=7)
+        data = Bookings.objects.filter(date__range=[start_date, end_date])
+
+    # Get the count of bookings for each day in the date range
+    date_range = [start_date + timedelta(days=x) for x in range(7)]
+    booking_counts = [data.filter(date=date).count() for date in date_range]
+
+    data = {
+        'labels': [date.strftime('%Y-%m-%d') for date in date_range],
+        'bookings': booking_counts,
+    }
+
+    serializer = BookingStatisticsSerializer(data)
+    return Response(serializer.data)
+
+
+@api_view(['GET'])
+def service_statistics(request):
+    # Query your Services model to get service statistics
+    data = Services.objects.annotate(booking_count=Count('servicelocation__services'))
+    labels = [entry.services for entry in data]
+    servicesCount = [entry.booking_count for entry in data]
+
+    serializer = ServiceStatisticsSerializer(data={'labels': labels, 'servicesCount': servicesCount})
+    if serializer.is_valid():
+        return Response(serializer.validated_data)
+    return Response(serializer.errors, status=400)

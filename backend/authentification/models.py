@@ -65,35 +65,26 @@ class WorkerBookings(models.Model):
     worker = models.ForeignKey(CustomUser,on_delete=models.CASCADE)
     bookings = models.ForeignKey(Bookings,on_delete=models.CASCADE)
     
-# class WorkDetails(models.Model):
-#     user = models.ForeignKey(CustomUser)
-#     service = models.ForeignKey(Services)
-#     worker = models.ForeignKey(CustomUser)
-#     contact_details = models.TextField()
-#     location = models.ForeignKey(Locations)
-#     date = models.DateField(auto_now=True)
-#     def __str__(self):
-#         return f"{self.user}-{self.service}-{self.worker}"
     
 
 class FielfOfExpertise(models.Model):
     worker = models.ForeignKey(CustomUser,on_delete=models.CASCADE)
     field = models.ForeignKey(Services,on_delete=models.CASCADE)
     
-    
-# class WorkerBookings(models.Model):
-#     work_details = models.ForeignKey(WorkDetails,on_delete=models.CASCADE)
-#     worker = models.ForeignKey(CustomUser,on_delete=models.CASCADE)
-    
+
 
     
 class Otpstore(models.Model):
     user = models.OneToOneField(CustomUser,on_delete=models.CASCADE)
     otp = models.IntegerField()
     
-# class Review(models.Model):
-#     worker = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-#     user = models.ForeignKey(CustomUser,on_delete=models.CASCADE)
-#     comment = models.TextField()
-#     rating = models.DecimalField(max_digits=3, decimal_places=2)
-#     date = models.DateField()
+    
+class Review(models.Model):
+    user = models.ForeignKey(CustomUser,on_delete=models.CASCADE)
+    comment = models.TextField()
+    date = models.DateField(auto_now=True)
+    
+class WorkerReview(models.Model):
+    worker = models.ForeignKey(CustomUser,on_delete=models.CASCADE)
+    reviews = models.ForeignKey(Review,on_delete=models.CASCADE)
+    

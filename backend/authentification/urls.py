@@ -17,4 +17,6 @@ urlpatterns = [
     path('bookings/<int:user_id>/',ListBookings.as_view(), name='bookings'),
     path('forgot-password/',ForgotPassword.as_view(), name='forgot-password'),
     path('reset-password',PasswordReset.as_view(),name='reset-password'),
+    path('check-permission-to-review/',IsAllowedToAddReview.as_view(), name='check-permission-to-review'),
+    path('add-review/',AddReview.as_view(),name='add-review'),
 ]

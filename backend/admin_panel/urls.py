@@ -13,4 +13,7 @@ urlpatterns = [
     path('block-unblock-user/<str:username>/', BlockUnblockUsers.as_view(), name='block-unblock-user'),
     path('worker-bookings/<int:worker_id>/',WorkerBookingsList.as_view(), name='worker-bookings'),
     path('user-bookings/<str:user_name>/',UserBookingsList.as_view(), name='user-bookings'),
+    path('booking-statistics/',booking_statistics,name='booking-statistics'),
+    path('service-statistics/', service_statistics, name='service-statistics'),
+    path('worker-approval-requests-count/',PendingApprovalRequestCount.as_view(),name='worker-approval-requests-count'),
 ]
