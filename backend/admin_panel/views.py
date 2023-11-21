@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from authentification.serializer import UserSerializers
-from authentification.models import Services,WorkerDetails,CustomUser,FielfOfExpertise,Locations,WorkerBookings,Bookings
-from authentification.serializer import UserSerializers,WorkerDetailsSerializer,ServicesSerializer,LocationsSerializer,BookingSerializer
+from authentification.models import Services,WorkerDetails,CustomUser,FielfOfExpertise,Locations,WorkerBookings,Bookings,Payment
+from authentification.serializer import UserSerializers,WorkerDetailsSerializer,ServicesSerializer,LocationsSerializer,BookingSerializer,PaymentSerializer
 from rest_framework.views import APIView
 from rest_framework import generics
 from rest_framework.response import Response
@@ -263,3 +263,8 @@ def service_statistics(request):
     if serializer.is_valid():
         return Response(serializer.validated_data)
     return Response(serializer.errors, status=400)
+
+
+class Transactions(generics.ListAPIView):
+    queryset = Payment.objects.all()
+    serializer_class = PaymentSerializer

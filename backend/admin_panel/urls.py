@@ -16,4 +16,5 @@ urlpatterns = [
     path('booking-statistics/',booking_statistics,name='booking-statistics'),
     path('service-statistics/', service_statistics, name='service-statistics'),
     path('worker-approval-requests-count/',PendingApprovalRequestCount.as_view(),name='worker-approval-requests-count'),
+    path('transactions/',Transactions.as_view(),name='transactions'),
 ]

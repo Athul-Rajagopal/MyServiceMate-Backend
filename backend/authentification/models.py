@@ -88,3 +88,34 @@ class WorkerReview(models.Model):
     worker = models.ForeignKey(CustomUser,on_delete=models.CASCADE)
     reviews = models.ForeignKey(Review,on_delete=models.CASCADE)
     
+    
+class Payment(models.Model):
+    Bookings = models.ForeignKey(Bookings, on_delete=models.CASCADE)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    date = models.DateTimeField(auto_now_add=True, blank=True , null=True)
+    payed_date_time = models.DateTimeField(auto_now_add=True, blank=True , null=True)
+    received_date_time = models.DateTimeField(auto_now_add=True, blank=True , null=True)
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='payments_as_user')
+    worker = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='payments_as_worker')
+    is_recieved = models.BooleanField(default=False)  # Add the payment status field
+    is_payed = models.BooleanField(default=False)
+    payment_id = models.CharField(max_length=50, blank=True,null=True)  # Add the payment ID field
+
+    def _str_(self):
+        return f"Payment for booking ID {self.Bookings.bookings.id} by {self.user.username}"
+
+
+class WorkerWallet(models.Model):
+    Worker = models.ForeignKey(CustomUser,on_delete=models.CASCADE)
+    wallet_amount = models.IntegerField()
+    
+    def __str__(self):
+        return f"{self.Worker.username}-{self.wallet_amount}"
+   
+    
+class AdminWallet(models.Model):
+    admin = models.ForeignKey(CustomUser,on_delete=models.CASCADE)
+    wallet_amount = models.IntegerField()
+    
+    def __str__(self):
+        return f"{self.admin.username}-{self.wallet_amount}"

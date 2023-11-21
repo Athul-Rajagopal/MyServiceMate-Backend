@@ -1,6 +1,6 @@
 from django.shortcuts import render
-from authentification.serializer import ServicesSerializer,FieldOfExperticeSerializer,WorkerDetailsUpdateLocationSerializer,WorkerDetailsUpdatePhoneNumberSerializer,BookingSerializer,ReviewSerializer
-from authentification.models import Services,WorkerDetails,CustomUser,FielfOfExpertise,Locations,Bookings,WorkerBookings,Review,WorkerReview
+from authentification.serializer import ServicesSerializer,FieldOfExperticeSerializer,WorkerDetailsUpdateLocationSerializer,WorkerDetailsUpdatePhoneNumberSerializer,BookingSerializer,ReviewSerializer,PaymentSerializer,WalletSerializer
+from authentification.models import Services,WorkerDetails,CustomUser,FielfOfExpertise,Locations,Bookings,WorkerBookings,Review,WorkerReview,Payment,WorkerWallet
 from rest_framework.views import APIView
 from rest_framework import generics
 from rest_framework.response import Response
@@ -13,6 +13,7 @@ from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 from backend import settings
+from django.utils import timezone
 
 
 # Create your views here.
@@ -165,7 +166,7 @@ class WorkerIncompleteBookingsList(generics.ListAPIView):
         # Filter bookings by worker_id and is_accepted status
         worker = CustomUser.objects.get(id=worker_id)
         bookings = WorkerBookings.objects.filter(worker = worker).values('bookings')
-        return Bookings.objects.filter(id__in=bookings, is_accepted=True,is_completed=False)
+        return Bookings.objects.filter(id__in=bookings, is_accepted=True)
    
     
     
@@ -215,4 +216,54 @@ class WorkerReviewsList(generics.ListAPIView):
        reviews = WorkerReview.objects.filter(worker=worker).values('reviews')
        return Review.objects.filter(id__in=reviews) 
     
+ 
+class PaymentRequestSentView(generics.CreateAPIView):
+    queryset = Payment.objects.all()
+    serializer_class = PaymentSerializer   
+
+    def create(self, request, *args, **kwargs): 
+        
+        amount = request.data.get('amount')
+        booking_data = request.data.get('booking')
+        print('booking_data',booking_data)
+        user_id = booking_data.get('user')
+        booking_id = booking_data.get('id')
+        worker = self.request.user
+        user = CustomUser.objects.get(id=user_id)
+        bookings = Bookings.objects.get(id=booking_id)
+        
+        bookings.is_completed = True
+        
+        bookings.save()
+        # Set payed_date_time to the current date and time
+        payed_date_time = None
+        date = timezone.now()
+        # Keep received_date_time as null
+        received_date_time = None
+
+        payment_request = Payment.objects.create(
+            Bookings=bookings,
+            amount=amount,
+            user=user,
+            worker=worker,
+            date=date,
+            payed_date_time=payed_date_time,
+            received_date_time=received_date_time,
+        )
+
+        payment_request.save()
+        
+        print('payment_request',payment_request)
+
+        serializer = PaymentSerializer(payment_request)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+       
+       
+class WalletDetails(generics.ListAPIView):
+    serializer_class = WalletSerializer
+
+    def get_queryset(self):
+        worker_id = self.kwargs['worker_id']
+        worker = CustomUser.objects.get(id=worker_id)
+        return WorkerWallet.objects.filter(Worker=worker)
     

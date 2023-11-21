@@ -3,10 +3,10 @@ from rest_framework.views import APIView
 from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework.exceptions import AuthenticationFailed
-from .serializer import UserSerializers,LocationsSerializer, ServicesSerializer, ServiceLocationSerializer,BookingSerializer,ReviewSerializer
+from .serializer import UserSerializers,LocationsSerializer, ServicesSerializer, ServiceLocationSerializer,BookingSerializer,ReviewSerializer,PaymentSerializer
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
-from .models import CustomUser,Locations, Services, Otpstore, ServiceLocation,WorkerDetails,FielfOfExpertise,Bookings,WorkerBookings,Review,WorkerReview
+from .models import CustomUser,Locations, Services, Otpstore, ServiceLocation,WorkerDetails,FielfOfExpertise,Bookings,WorkerBookings,Review,WorkerReview,Payment
 from rest_framework_simplejwt.views import TokenObtainPairView,TokenRefreshView
 from datetime import timedelta
 from datetime import datetime
@@ -21,7 +21,11 @@ from math import radians, sin, cos, sqrt, atan2
 from django.http import JsonResponse
 from .signals import send_worker_notification
 from django.contrib.auth.hashers import make_password
-
+import stripe
+from django.http import HttpResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.shortcuts import redirect
+from django.utils import timezone
 
 
 
@@ -370,3 +374,148 @@ class AddReview(generics.CreateAPIView):
         # Instantiate the serializer with the created review object
         serializer = ReviewSerializer(review)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+class GetPendingPayments(generics.ListAPIView):
+    serializer_class = PaymentSerializer
+    
+    def get_queryset(self):
+        
+       user_id = self.kwargs['user_id'] 
+       user = CustomUser.objects.get(id=user_id)
+       pending_payments = Payment.objects.filter(user=user,is_recieved=False,is_payed=False)
+       
+       return pending_payments
+
+class GetPaymentHistory(generics.ListAPIView):
+       
+    serializer_class = PaymentSerializer
+    
+    def get_queryset(self):
+        
+       user_id = self.kwargs['user_id'] 
+       user = CustomUser.objects.get(id=user_id)
+       payment_history = Payment.objects.filter(user=user,is_payed=True)
+       
+       return payment_history
+   
+class StripeCheckoutView(APIView):
+    def post(self, request):
+        user = request.user      
+        worker_username = request.data['payment']['worker']['username']
+        booking_details = request.data['payment']['Bookings']
+        booking_id = request.data['payment']['Bookings']['id']
+        Total_amount = request.data['payment']['amount']
+        print(worker_username,booking_details,booking_id,Total_amount)
+        print('requests strip checking')
+        try:
+            stripe.api_key = settings.STRIPE_SECRET_KEY
+            # Ensure that course.price is an integer representing the price in cents.
+            pricess = int(float(Total_amount) * 100)           
+            checkout_session = stripe.checkout.Session.create(
+                line_items=[
+                    {
+                        'price_data': {
+                            'currency': 'inr',
+                            'unit_amount': pricess,
+                            'product_data': {
+                                'name': user.username,
+                            },
+                        },
+                        'quantity': 1,
+                    },
+                ],
+                payment_method_types=['card'],
+                mode='payment',
+                metadata = {
+                    'userId': user.id,
+                    'worker': worker_username,
+                    'BookingId': booking_id,
+                    'amount' : Total_amount,
+                },
+                success_url=settings.SITE_URL + f'/?success=true&session_id={{CHECKOUT_SESSION_ID}}',
+                cancel_url=settings.SITE_URL + '/?canceled=true',
+            )
+            print(checkout_session.url)
+            # Return a valid JsonResponse
+            return JsonResponse({'session_id': checkout_session.id})
+
+        except stripe.error.StripeError as e:
+            # Handle Stripe-specific errors
+            print(f"Stripe Error: {e}")
+            return Response(
+                {
+                    'error': 'Something went wrong when creating the Stripe checkout session'
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+        except Exception as e:
+            # Handle other exceptions
+            print(f"An error occurred: {e}")
+            return Response(
+                {
+                    'error': 'An error occurred while processing the request'
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+  
+ 
+@csrf_exempt 
+def stripe_webhook_view(request):
+    payload = request.body
+    endpoint = settings.STRIPE_WEBHOOK_SECRET
+    sig_header = request.META['HTTP_STRIPE_SIGNATURE']
+    event = None
+
+    try:
+        event = stripe.Webhook.construct_event(
+        payload, sig_header, endpoint
+        )
+    except ValueError as e:
+        # Invalid payload
+        return HttpResponse(status=400)
+    except stripe.error.SignatureVerificationError as e:
+        # Invalid signature
+        return HttpResponse(status=400)
+    
+    # Handle the checkout.session.completed event
+    if event['type'] == 'checkout.session.completed':
+        # Retrieve the session. If you require line items in the response, you may include them by expanding line_items.
+        session = stripe.checkout.Session.retrieve(
+        event['data']['object']['id'],
+        expand=['line_items'],
+        )
+        
+        print(session)
+        booking_id = session['metadata']['BookingId']
+        worker_name = session['metadata']['worker']
+        user_id = session['metadata']['userId']
+        amount = session['metadata']['amount']
+        payment_id = session.line_items.data[0]['id']
+        
+        user = CustomUser.objects.get(id=int(user_id))
+        booking = Bookings.objects.get(id=int(booking_id))
+        
+        payment_obj = Payment.objects.get(
+            Bookings = booking,
+            amount = float(amount),
+            user = user
+        )
+        
+        payment_obj.is_recieved = True
+        payment_obj.is_payed = True
+        payment_obj.payed_date_time = timezone.now()
+        payment_obj.received_date_time = timezone.now()
+        payment_obj.payment_id = payment_id
+        payment_obj.save()
+        
+        wallet_amount = float(amount)-50
+        worker_wallet = WorkerWallet.objects.create(worker = payment_obj.worker, wallet_amount = wallet_amount)
+        worker_wallet.save()
+        
+        admin = CustomUser.objects.get(is_superuser=True)
+        admin_wallet = AdminWallet.objects.create(admin=admin,wallet_amount=50)
+        admin_wallet.save()
+
+    # Passed signature verification
+    return HttpResponse(status=200)
+

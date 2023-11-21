@@ -1,6 +1,6 @@
 from rest_framework_simplejwt.serializers import TokenRefreshSerializer
 from rest_framework import serializers
-from .models import CustomUser,Locations,Services,WorkerDetails,FielfOfExpertise,ServiceLocation,Bookings,WorkerBookings,Review,WorkerReview
+from .models import CustomUser,Locations,Services,WorkerDetails,FielfOfExpertise,ServiceLocation,Bookings,WorkerBookings,Review,WorkerReview,Payment,WorkerWallet
 
 
 
@@ -103,4 +103,18 @@ class WorkerDetailsUpdatePhoneNumberSerializer(serializers.ModelSerializer):
     
 
 
+class PaymentSerializer(serializers.ModelSerializer):
+    user = UserSerializers()
+    worker = UserSerializers()
+    Bookings = BookingSerializer()
+
+    class Meta:
+        model = Payment
+        fields = '__all__'
+        
+class WalletSerializer(serializers.ModelSerializer):
+    worker = UserSerializers()
+    class Meta:
+        model = WorkerWallet
+        fields = '__all__'
 #########################

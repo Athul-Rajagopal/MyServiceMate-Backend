@@ -19,4 +19,8 @@ urlpatterns = [
     path('reset-password',PasswordReset.as_view(),name='reset-password'),
     path('check-permission-to-review/',IsAllowedToAddReview.as_view(), name='check-permission-to-review'),
     path('add-review/',AddReview.as_view(),name='add-review'),
+    path('pending-payments/<int:user_id>/',GetPendingPayments.as_view(),name='pending-payments'),
+    path('payment-history/<int:user_id>/',GetPaymentHistory.as_view(), name='payment-history'),
+    path('checkout/',StripeCheckoutView.as_view(),name='checkout'),
+    path('webhook',stripe_webhook_view,name='webhook')
 ]

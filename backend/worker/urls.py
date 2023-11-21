@@ -14,5 +14,7 @@ urlpatterns = [
     path('reviews/<int:worker_id>/',WorkerReviewsList.as_view(),name='reviews'),
     path('worker-pending-bookings-count/',WorkerPendingBookingsCount.as_view(), name='worker-pending-bookings-count'),
     path('reject-booking/<int:booking_id>/',RejectBookings.as_view(),name='reject-booking'),
+    path('payment-request/',PaymentRequestSentView.as_view(), name='payment-request'),
+    path('worker-wallet/<int:worker_id>/',WalletDetails.as_view(), name='worker_wallet'),
 
 ]

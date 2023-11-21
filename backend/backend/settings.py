@@ -51,9 +51,11 @@ INSTALLED_APPS = [
 ]
 
 CORS_ORIGIN_ALLOW_ALL = False
+CORS_ALLOW_ALL_ORIGINS = True
 
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:5173',  # Add the origin of your frontend application
+    'https://checkout.stripe.com',
 ]
 
 CORS_ALLOW_CREDENTIALS = True
@@ -158,7 +160,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'authentification.CustomUser'
 
 
-CORS_ALLOW_ALL_ORIGINS = True
+
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_HEADERS = [
     'accept',
@@ -179,6 +181,10 @@ CORS_ALLOW_METHODS = [
     'POST',
     'PUT',
 ]
+
+STRIPE_SECRET_KEY = 'sk_test_51OCehdSCnIQ43r0B90LEGqdn6V1uaMGSLT0qCIIEgbsrvYhQ38NOTGOdNOmWFw8UhHBunYOfXJj3dOFS8adPfGzz00pKrFAbtU'
+SITE_URL = 'http://localhost:5173/app/pending-payments'
+STRIPE_WEBHOOK_SECRET = 'whsec_eba5a81f8c73e5ef3ba79f4a2281a913ced3c219004dcabb21e0cd79d93dac4a'
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
