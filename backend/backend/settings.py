@@ -27,7 +27,7 @@ SECRET_KEY = 'django-insecure-dvzr(e&dc8@u4+)*s#44_9u)fidqmc4pimoz@)o29z48-ves%3
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['0.0.0.0','127.0.0.1','3.110.119.94']
+ALLOWED_HOSTS = ['0.0.0.0','127.0.0.1','3.110.119.94','myservicemate.online','www.myservicemate.online','http://myservicemate.online','https://myservicemate.online']
 
 
 # Application definition
@@ -56,6 +56,19 @@ CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:5173',  # Add the origin of your frontend application
     'https://checkout.stripe.com',
+    'http://0.0.0.0:9000',
+    'http://localhost:3000',
+    'http://3.110.119.94',
+    'http://myservicemate.online',
+    'https://myservicemate.online'
+]
+
+CSRF_TRUSTED_ORIGINS = [ "https://myservicemate.online",
+                        "http://myservicemate.online",
+                        'http://3.110.119.94',
+                        "http://localhost:3000", 
+                        'http://0.0.0.0:9000',
+                        'http://localhost:5173',  
 ]
 
 CORS_ALLOW_CREDENTIALS = True
