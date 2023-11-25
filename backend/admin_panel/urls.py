@@ -17,4 +17,5 @@ urlpatterns = [
     path('service-statistics/', service_statistics, name='service-statistics'),
     path('worker-approval-requests-count/',PendingApprovalRequestCount.as_view(),name='worker-approval-requests-count'),
     path('transactions/',Transactions.as_view(),name='transactions'),
+    path('admin-wallet/',AdminWalletView.as_view(),name='admin-wallet'),
 ]

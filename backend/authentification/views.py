@@ -6,7 +6,7 @@ from rest_framework.exceptions import AuthenticationFailed
 from .serializer import UserSerializers,LocationsSerializer, ServicesSerializer, ServiceLocationSerializer,BookingSerializer,ReviewSerializer,PaymentSerializer
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
-from .models import CustomUser,Locations, Services, Otpstore, ServiceLocation,WorkerDetails,FielfOfExpertise,Bookings,WorkerBookings,Review,WorkerReview,Payment
+from .models import CustomUser,Locations, Services, Otpstore, ServiceLocation,WorkerDetails,FielfOfExpertise,Bookings,WorkerBookings,Review,WorkerReview,Payment,WorkerWallet,AdminWallet
 from rest_framework_simplejwt.views import TokenObtainPairView,TokenRefreshView
 from datetime import timedelta
 from datetime import datetime
@@ -68,7 +68,6 @@ class RegitrationView(APIView):
         password = serializer.validated_data.get('password')
         is_worker = serializer.validated_data.get('is_worker')
         
-        print(username,email,password,is_worker)
      
         if serializer.is_valid():
             user = serializer.save()
@@ -131,7 +130,7 @@ class ServicesByLocationList(APIView):
         
         service_location = ServiceLocation.objects.filter(locations=location_id)
         data = []
-        print(service_location)
+        
         if service_location:
             for service_location in service_location:
             # Access the related service
@@ -146,7 +145,6 @@ class ServicesByLocationList(APIView):
                 
                 data.append(data_di)
                 
-                print(data)
 
         return Response(data)
         # else:
@@ -166,7 +164,7 @@ class LogoutView(APIView):
 
             return Response(status=status.HTTP_205_RESET_CONTENT)
         except Exception as e:
-            print("Error:", e)
+            
             return Response(status=status.HTTP_400_BAD_REQUEST)
         
 #Worker listing
@@ -175,8 +173,6 @@ class WorkerListingView(APIView):
     def post(self, request):
         selected_service = request.data.get("selectedService")
         selected_location = request.data.get("selectedLocation")
-        
-        print(selected_service,selected_location)
         
         service_obj = Services.objects.get(id=int(selected_service))
         workers = FielfOfExpertise.objects.filter(field=service_obj)
@@ -230,12 +226,11 @@ class WorkerBookingsList(generics.ListAPIView):
 
     def get_queryset(self):
         worker_id = self.kwargs['worker_id']  # Assumes the URL pattern has a parameter named 'worker_id'
-        print(worker_id,type(worker_id))
+        
         # try:
         worker = CustomUser.objects.get(id=worker_id)
         bookings = WorkerBookings.objects.filter(worker = worker).values('bookings')
         
-        print(bookings)
         return Bookings.objects.filter(id__in=bookings)
         # except WorkerDetails.DoesNotExist:
         #     return []
@@ -277,12 +272,11 @@ class ListBookings(generics.ListAPIView):
     
     def get_queryset(self):
         user_id = self.kwargs['user_id']  # Assumes the URL pattern has a parameter named 'worker_id'
-        print(user_id,type(user_id))
+       
         # try:
         user = CustomUser.objects.get(id=user_id)
         bookings = Bookings.objects.filter(user = user)
         
-        print(bookings)
         return bookings
 
 #Password  
@@ -435,13 +429,13 @@ class StripeCheckoutView(APIView):
                 success_url=settings.SITE_URL + f'/?success=true&session_id={{CHECKOUT_SESSION_ID}}',
                 cancel_url=settings.SITE_URL + '/?canceled=true',
             )
-            print(checkout_session.url)
+            # print(checkout_session.url)
             # Return a valid JsonResponse
             return JsonResponse({'session_id': checkout_session.id})
 
         except stripe.error.StripeError as e:
             # Handle Stripe-specific errors
-            print(f"Stripe Error: {e}")
+            # print(f"Stripe Error: {e}")
             return Response(
                 {
                     'error': 'Something went wrong when creating the Stripe checkout session'
@@ -450,7 +444,7 @@ class StripeCheckoutView(APIView):
             )
         except Exception as e:
             # Handle other exceptions
-            print(f"An error occurred: {e}")
+            # print(f"An error occurred: {e}")
             return Response(
                 {
                     'error': 'An error occurred while processing the request'
@@ -485,13 +479,13 @@ def stripe_webhook_view(request):
         expand=['line_items'],
         )
         
-        print(session)
+        # print(session)
         booking_id = session['metadata']['BookingId']
         worker_name = session['metadata']['worker']
         user_id = session['metadata']['userId']
         amount = session['metadata']['amount']
         payment_id = session.line_items.data[0]['id']
-        
+        # print('payment_id .............>>',payment_id)
         user = CustomUser.objects.get(id=int(user_id))
         booking = Bookings.objects.get(id=int(booking_id))
         
@@ -509,11 +503,12 @@ def stripe_webhook_view(request):
         payment_obj.save()
         
         wallet_amount = float(amount)-50
-        worker_wallet = WorkerWallet.objects.create(worker = payment_obj.worker, wallet_amount = wallet_amount)
+        worker_wallet = WorkerWallet.objects.create(Worker = payment_obj.worker, wallet_amount = wallet_amount)
         worker_wallet.save()
         
-        admin = CustomUser.objects.get(is_superuser=True)
-        admin_wallet = AdminWallet.objects.create(admin=admin,wallet_amount=50)
+        # admin = CustomUser.objects.get(is_superuser=True)
+        date = timezone.now()
+        admin_wallet = AdminWallet.objects.create(date=date, wallet_amount=50)
         admin_wallet.save()
 
     # Passed signature verification

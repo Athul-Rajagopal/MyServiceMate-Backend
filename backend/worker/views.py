@@ -22,7 +22,6 @@ from django.utils import timezone
 class ServiceList(generics.ListAPIView):
     
     queryset = Services.objects.all()
-    print(queryset)
     serializer_class = ServicesSerializer
     
 class WorkerLocationUpdateView(generics.CreateAPIView):
@@ -130,7 +129,6 @@ class ViewWorkerProfile(APIView):
                                        'image':field.field.image.url} for field in field_of_expertise],
                     })
         
-        print(serialized_data)
 
         return JsonResponse({'data': serialized_data}, safe=False)
     
@@ -196,7 +194,6 @@ class AcceptBookings(APIView):
 
 class RejectBookings(APIView):
     def post(self, request, booking_id):
-        print('##############################3')
         booking = Bookings.objects.get(id=booking_id)
         booking.is_rejected = True
         booking.save()
@@ -253,7 +250,6 @@ class PaymentRequestSentView(generics.CreateAPIView):
 
         payment_request.save()
         
-        print('payment_request',payment_request)
 
         serializer = PaymentSerializer(payment_request)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -267,3 +263,11 @@ class WalletDetails(generics.ListAPIView):
         worker = CustomUser.objects.get(id=worker_id)
         return WorkerWallet.objects.filter(Worker=worker)
     
+
+class WorkerTransactions(generics.ListAPIView):
+    serializer_class = PaymentSerializer
+    
+    def get_queryset(self):
+        worker_id = self.kwargs['worker_id']
+        worker = CustomUser.objects.get(id=worker_id)
+        return Payment.objects.filter(worker=worker, is_recieved=True)

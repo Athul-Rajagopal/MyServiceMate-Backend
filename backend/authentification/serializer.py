@@ -1,6 +1,6 @@
 from rest_framework_simplejwt.serializers import TokenRefreshSerializer
 from rest_framework import serializers
-from .models import CustomUser,Locations,Services,WorkerDetails,FielfOfExpertise,ServiceLocation,Bookings,WorkerBookings,Review,WorkerReview,Payment,WorkerWallet
+from .models import CustomUser,Locations,Services,WorkerDetails,FielfOfExpertise,ServiceLocation,Bookings,WorkerBookings,Review,WorkerReview,Payment,WorkerWallet,AdminWallet
 
 
 
@@ -117,4 +117,15 @@ class WalletSerializer(serializers.ModelSerializer):
     class Meta:
         model = WorkerWallet
         fields = '__all__'
+        
+class AdminWalletSerializer(serializers.ModelSerializer):
+    total_wallet_amount = serializers.SerializerMethodField()
+
+    class Meta:
+        model = AdminWallet
+        fields = '__all__'
+
+    def get_total_wallet_amount(self, obj):
+        # Call the get_total_wallet_amount method from the model
+        return AdminWallet.get_total_wallet_amount()
 #########################

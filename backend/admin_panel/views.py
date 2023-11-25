@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from authentification.serializer import UserSerializers
-from authentification.models import Services,WorkerDetails,CustomUser,FielfOfExpertise,Locations,WorkerBookings,Bookings,Payment
-from authentification.serializer import UserSerializers,WorkerDetailsSerializer,ServicesSerializer,LocationsSerializer,BookingSerializer,PaymentSerializer
+from authentification.models import Services,WorkerDetails,CustomUser,FielfOfExpertise,Locations,WorkerBookings,Bookings,Payment,AdminWallet
+from authentification.serializer import UserSerializers,WorkerDetailsSerializer,ServicesSerializer,LocationsSerializer,BookingSerializer,PaymentSerializer,AdminWalletSerializer
 from rest_framework.views import APIView
 from rest_framework import generics
 from rest_framework.response import Response
@@ -106,7 +106,6 @@ class GetWorkersList(APIView):
                     'expertise': [{'services': 'not selected', 'id': 'unknown'}]
                 })
 
-        print(serialized_data)
 
         return JsonResponse({'data': serialized_data}, safe=False)
         
@@ -268,3 +267,13 @@ def service_statistics(request):
 class Transactions(generics.ListAPIView):
     queryset = Payment.objects.all()
     serializer_class = PaymentSerializer
+    
+    
+class AdminWalletView(generics.ListAPIView):
+    serializer_class = AdminWalletSerializer
+    queryset = AdminWallet.objects.all()
+
+    def get_serializer_context(self):
+        # Pass the total_wallet_amount to the serializer context
+        total_wallet_amount = AdminWallet.get_total_wallet_amount()
+        return {'total_wallet_amount': total_wallet_amount}

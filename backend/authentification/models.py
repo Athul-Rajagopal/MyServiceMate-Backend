@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+from django.db.models import Sum
 
 # Create your models here.
 
@@ -114,8 +115,14 @@ class WorkerWallet(models.Model):
    
     
 class AdminWallet(models.Model):
-    admin = models.ForeignKey(CustomUser,on_delete=models.CASCADE)
+    date = models.DateTimeField(auto_now=True, blank=True, null=True)
     wallet_amount = models.IntegerField()
     
+    @classmethod
+    def get_total_wallet_amount(cls):
+        # Calculate and return the total wallet amount
+        total_amount = cls.objects.aggregate(Sum('wallet_amount'))['wallet_amount__sum']
+        return total_amount if total_amount is not None else 0
+    
     def __str__(self):
-        return f"{self.admin.username}-{self.wallet_amount}"
+        return f"-{self.wallet_amount}"
