@@ -125,7 +125,7 @@ class ServiceCreateView(generics.CreateAPIView):
         service = serializer.save()
 
         # Add selected locations to the service
-        location_ids = request.data.get('location[]',[])
+        location_ids = request.data.getlist('location[]',[])
         print(location_ids)
         for location_id in location_ids:
             location = Locations.objects.get(id = int(location_id))
