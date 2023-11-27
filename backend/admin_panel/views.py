@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from authentification.serializer import UserSerializers
-from authentification.models import Services,WorkerDetails,CustomUser,FielfOfExpertise,Locations,WorkerBookings,Bookings,Payment,AdminWallet
+from authentification.models import Services,WorkerDetails,CustomUser,FielfOfExpertise,Locations,WorkerBookings,Bookings,Payment,AdminWallet,ServiceLocation
 from authentification.serializer import UserSerializers,WorkerDetailsSerializer,ServicesSerializer,LocationsSerializer,BookingSerializer,PaymentSerializer,AdminWalletSerializer
 from rest_framework.views import APIView
 from rest_framework import generics
