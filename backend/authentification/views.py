@@ -250,8 +250,11 @@ class CreateBookings(generics.CreateAPIView):
         issue = request.data.get('issue')
         worker_id = request.data.get('workerId')
         
+        # Remove milliseconds from the ISO 8601 date string
+        booking_date_without_ms = booking_date.rsplit('.', 1)[0]
+        
         # Convert ISO 8601 date to "YYYY-MM-DD" format
-        formatted_date = datetime.fromisoformat(booking_date).strftime("%Y-%m-%d")
+        formatted_date = datetime.fromisoformat(booking_date_without_ms).strftime("%Y-%m-%d")
     
         booking = Bookings.objects.create(
             user=user,
