@@ -145,8 +145,6 @@ class ServicesByLocationList(APIView):
                 
                 data.append(data_di)
         
-            print(data)
-            print(service_location)
 
             return Response(data)
         else:
@@ -175,6 +173,8 @@ class WorkerListingView(APIView):
     def post(self, request):
         selected_service = request.data.get("selectedService")
         selected_location = request.data.get("selectedLocation")
+        
+        print('selected service',selected_service,'selected location',selected_location)
         
         service_obj = Services.objects.get(id=int(selected_service))
         workers = FielfOfExpertise.objects.filter(field=service_obj)
