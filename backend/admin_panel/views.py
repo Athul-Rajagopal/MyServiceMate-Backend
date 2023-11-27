@@ -117,6 +117,7 @@ class ServiceCreateView(generics.CreateAPIView):
 
     def create(self, request, *args, **kwargs):
         # Deserialize the data using the serializer
+        print('request.data ===',request.data)
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
@@ -124,7 +125,7 @@ class ServiceCreateView(generics.CreateAPIView):
         service = serializer.save()
 
         # Add selected locations to the service
-        location_ids = request.data.get('location', [])
+        location_ids = request.data.get('location')
         print(location_ids)
         for location_id in location_ids:
             location = Locations.objects.get(id = int(location_id))
