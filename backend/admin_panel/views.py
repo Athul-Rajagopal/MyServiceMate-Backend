@@ -127,7 +127,8 @@ class ServiceCreateView(generics.CreateAPIView):
         location_ids = request.data.get('location', [])
         for location_id in location_ids:
             location = Locations.objects.get(id = int(location_id))
-            ServiceLocation.objects.create(services=service, locations=location)
+            serviceLocation = ServiceLocation.objects.create(services=service, locations=location)
+            serviceLocation.save()
 
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)

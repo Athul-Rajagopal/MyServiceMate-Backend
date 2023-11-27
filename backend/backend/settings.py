@@ -57,8 +57,10 @@ CORS_ALLOWED_ORIGINS = [
     'http://localhost:5173',  # Add the origin of your frontend application
     'https://checkout.stripe.com',
     'http://0.0.0.0:9000',
+    'https://0.0.0.0:9000',
     'http://localhost:3000',
     'http://3.110.119.94',
+    'https://3.110.119.94',
     'http://myservicemate.online',
     'https://myservicemate.online'
 ]
@@ -66,8 +68,10 @@ CORS_ALLOWED_ORIGINS = [
 CSRF_TRUSTED_ORIGINS = [ "https://myservicemate.online",
                         "http://myservicemate.online",
                         'http://3.110.119.94',
+                        'https://3.110.119.94',
                         "http://localhost:3000", 
                         'http://0.0.0.0:9000',
+                        'https://0.0.0.0:9000',
                         'http://localhost:5173',  
 ]
 
