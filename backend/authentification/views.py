@@ -144,11 +144,13 @@ class ServicesByLocationList(APIView):
                 }
                 
                 data.append(data_di)
-                
+        
+            print(data)
+            print(service_location)
 
-        return Response(data)
-        # else:
-        #     return Response({'message': 'No services found for the selected location.'}, status=404)
+            return Response(data)
+        else:
+            return Response({'message': 'No services found for the selected location.'}, status=404)
 
 #Logout    
     
