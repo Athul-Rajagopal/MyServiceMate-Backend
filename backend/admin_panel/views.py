@@ -125,6 +125,7 @@ class ServiceCreateView(generics.CreateAPIView):
 
         # Add selected locations to the service
         location_ids = request.data.get('location', [])
+        print(location_ids)
         for location_id in location_ids:
             location = Locations.objects.get(id = int(location_id))
             serviceLocation = ServiceLocation.objects.create(services=service, locations=location)
