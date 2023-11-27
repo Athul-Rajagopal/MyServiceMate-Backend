@@ -199,6 +199,7 @@ class WorkerListingView(APIView):
                         'worker_name': worker.username,
                         'distance': distance,
                     })
+            print(workers_in_range)
             
             return JsonResponse(workers_in_range, safe=False)
         
