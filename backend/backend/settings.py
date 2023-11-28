@@ -203,7 +203,7 @@ CORS_ALLOW_METHODS = [
 
 STRIPE_SECRET_KEY = 'sk_test_51OCehdSCnIQ43r0B90LEGqdn6V1uaMGSLT0qCIIEgbsrvYhQ38NOTGOdNOmWFw8UhHBunYOfXJj3dOFS8adPfGzz00pKrFAbtU'
 SITE_URL = 'https://my-service-mate-icx8435vi-athul-rajagopalan-ps-projects.vercel.app/app/pending-payments'
-STRIPE_WEBHOOK_SECRET = 'whsec_eba5a81f8c73e5ef3ba79f4a2281a913ced3c219004dcabb21e0cd79d93dac4a'
+STRIPE_WEBHOOK_SECRET = 'we_1OHILCSCnIQ43r0Bgi9c4jdI'
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
