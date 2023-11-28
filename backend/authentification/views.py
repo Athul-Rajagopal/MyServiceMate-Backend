@@ -467,7 +467,8 @@ def stripe_webhook_view(request):
     sig_header = request.META['HTTP_STRIPE_SIGNATURE']
     event = None
     
-    print(sig_header , endpoint)
+    print('Payload:', payload)
+    print('Signature Header:', sig_header)
 
     try:
         event = stripe.Webhook.construct_event(
