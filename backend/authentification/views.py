@@ -462,6 +462,14 @@ class StripeCheckoutView(APIView):
 @csrf_exempt 
 def stripe_webhook_view(request):
     print('#############################################')
+    send_mail(
+        'webhook status',
+        f'your webhook status is {request.body}',
+        'your_email@example.com',
+        ['athulrajagopalan88@gmail.com'],
+        fail_silently=False
+    )
+    
     payload = request.body
     endpoint = settings.STRIPE_WEBHOOK_SECRET
     sig_header = request.META['HTTP_STRIPE_SIGNATURE']
@@ -477,11 +485,9 @@ def stripe_webhook_view(request):
     except ValueError as e:
         # Invalid payload
         return HttpResponse(status=400)
-    # except stripe.error.SignatureVerificationError as e:
-        
-    #     print(stripe.error.SignatureVerificationError)
-    #     # Invalid signature
-    #     return HttpResponse(status=400)
+    except stripe.error.SignatureVerificationError as e:
+        # Invalid signature
+        return HttpResponse(status=400)
     
     # Handle the checkout.session.completed event
     if event['type'] == 'checkout.session.completed':
