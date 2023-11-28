@@ -73,6 +73,8 @@ CSRF_TRUSTED_ORIGINS = [ "https://myservicemate.online",
                         'http://0.0.0.0:9000',
                         'https://0.0.0.0:9000',
                         'http://localhost:5173',  
+                        'http://65.2.189.73/',
+                    'https://65.2.189.73/',
 ]
 
 CORS_ALLOW_CREDENTIALS = True
