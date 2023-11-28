@@ -466,6 +466,8 @@ def stripe_webhook_view(request):
     endpoint = settings.STRIPE_WEBHOOK_SECRET
     sig_header = request.META['HTTP_STRIPE_SIGNATURE']
     event = None
+    
+    print(sig_header , endpoint)
 
     try:
         event = stripe.Webhook.construct_event(
@@ -475,6 +477,8 @@ def stripe_webhook_view(request):
         # Invalid payload
         return HttpResponse(status=400)
     except stripe.error.SignatureVerificationError as e:
+        
+        print(stripe.error.SignatureVerificationError)
         # Invalid signature
         return HttpResponse(status=400)
     
