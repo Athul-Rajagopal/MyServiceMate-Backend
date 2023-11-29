@@ -237,7 +237,11 @@ class EditLocation(APIView):
     def put(self,request,location_id):
         location_obj = Locations.objects.get(id=int(location_id))
         serializer = LocationsSerializer(location_obj, data=request.data, partial=True)
-        serializer.save()
+        print(request.data)
+        location_obj.locations = request.data.get('locations')
+        location_obj.latitude = request.data.get('latitude')
+        location_obj.longitude = request.data.get('longitude')
+        location_obj.save()
         
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 # user management
