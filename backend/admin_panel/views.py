@@ -188,15 +188,17 @@ class ServiceEditView(APIView):
                     service_obj.image = request.data['image']
              # Check if 'location' values are defined and not NaN
             if 'location[]' in request.data and request.data['location[]']:
-                location_ids = [int(location_id) for location_id in request.data.getlist('location[]')]
-                
+                location_ids = [location_id for location_id in request.data.getlist('location[]') if location_id != 'NaN']
                 
                 for location_id in location_ids:
-                    location = Locations.objects.get(id = int(location_id))
-                    serviceLocation = ServiceLocation.objects.create(services=service_obj, locations=location)
-                    serviceLocation.save()
-            
-            return Response(serializer.data, status=status.HTTP_200_OK)
+                    try:
+                        location = Locations.objects.get(id=int(location_id))
+                        serviceLocation = ServiceLocation.objects.create(services=service_obj, locations=location)
+                        serviceLocation.save()
+                    except Locations.DoesNotExist:
+                        return Response({"error": f"Location with ID {location_id} does not exist"}, status=status.HTTP_404_NOT_FOUND)
+                
+                return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
 
