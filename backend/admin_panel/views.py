@@ -231,8 +231,15 @@ class EditLocation(APIView):
     def get(self,request,location_id):
         location_obj = Locations.objects.get(id=int(location_id))
         serializer = LocationsSerializer(location_obj) 
-        return Response(serializer.data)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
     
+    def put(self,request,location_id):
+        location_obj = Locations.objects.get(id=int(location_id))
+        serializer = LocationsSerializer(location_obj, data=request.data, partial=True)
+        serializer.save()
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 # user management
 
 class GetuserList(generics.ListAPIView):
