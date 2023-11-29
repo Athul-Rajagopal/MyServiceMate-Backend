@@ -181,6 +181,9 @@ class ServiceEditView(APIView):
         
         serializer = ServicesSerializer(service_obj, data=request.data, partial=True)
         if serializer.is_valid():
+            
+            if 'services' in request.data:
+                service_obj.services = request.data['services']
             # Check if the 'image' field is defined in the request data
             if 'image' in request.data:
                 # If 'image' is not undefined (null/None), update the image
@@ -189,6 +192,8 @@ class ServiceEditView(APIView):
              # Check if 'location' values are defined and not NaN
             if 'location[]' in request.data and request.data['location[]']:
                 location_ids = [location_id for location_id in request.data.getlist('location[]') if location_id != 'NaN']
+                
+                ServiceLocation.objects.filter(services=service_obj).delete()
                 
                 for location_id in location_ids:
                     try:
