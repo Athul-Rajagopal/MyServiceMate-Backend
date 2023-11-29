@@ -173,7 +173,7 @@ class ServiceEditView(APIView):
         
         return Response(data)
     
-    def put(self,request,sevice_id):
+    def put(self,request,service_id):
         try:
             service_obj = Services.objects.get(id=int(service_id))
         except Services.DoesNotExist:
