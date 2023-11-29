@@ -172,8 +172,32 @@ class ServiceEditView(APIView):
         }
         
         return Response(data)
+    
+    def put(self,request,sevice_id):
+        try:
+            service_obj = Services.objects.get(id=int(service_id))
+        except Services.DoesNotExist:
+            return Response({"error": "Service not found"}, status=404)
         
+        serializer = ServicesSerializer(service_obj, data=request.data, partial=True)
+        if serializer.is_valid():
+            # Check if the 'image' field is defined in the request data
+            if 'image' in request.data:
+                # If 'image' is not undefined (null/None), update the image
+                if request.data['image']:
+                    service_obj.image = request.data['image']
+             # Check if 'location' values are defined and not NaN
+            if 'location[]' in request.data and request.data['location[]']:
+                location_ids = [int(location_id) for location_id in request.data.getlist('location[]')]
+                
+                
+                for location_id in location_ids:
+                    location = Locations.objects.get(id = int(location_id))
+                    serviceLocation = ServiceLocation.objects.create(services=service_obj, locations=location)
+                    serviceLocation.save()
             
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
 
 # Location management
