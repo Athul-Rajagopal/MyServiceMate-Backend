@@ -226,7 +226,12 @@ class LocationCreateView(generics.CreateAPIView):
 class RemoveLocationView(generics.DestroyAPIView):
     queryset = Locations.objects.all()
     serializer_class = LocationsSerializer
-    
+ 
+class EditLocation(APIView):
+    def get(self,request,location_id):
+        location_obj = Locations.objects.get(id=int(location_id))
+        serializer = LocationsSerializer(location_obj) 
+        return Response(serializer.data)
     
 # user management
 
