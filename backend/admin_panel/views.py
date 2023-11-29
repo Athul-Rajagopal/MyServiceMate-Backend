@@ -184,11 +184,13 @@ class ServiceEditView(APIView):
             
             if 'services' in request.data:
                 service_obj.services = request.data['services']
+                service_obj.save()
             # Check if the 'image' field is defined in the request data
             if 'image' in request.data:
                 # If 'image' is not undefined (null/None), update the image
                 if request.data['image']:
                     service_obj.image = request.data['image']
+                    service_obj.save()
              # Check if 'location' values are defined and not NaN
             if 'location[]' in request.data and request.data['location[]']:
                 location_ids = [location_id for location_id in request.data.getlist('location[]') if location_id != 'NaN']
