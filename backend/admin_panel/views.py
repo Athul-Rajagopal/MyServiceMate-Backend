@@ -234,16 +234,17 @@ class EditLocation(APIView):
      
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     
-    def put(self,request,location_id):
+    def put(self, request, location_id):
         location_obj = Locations.objects.get(id=int(location_id))
         serializer = LocationsSerializer(location_obj, data=request.data, partial=True)
-        print(request.data)
-        location_obj.locations = request.data.get('locations')
-        location_obj.latitude = request.data.get('latitude')
-        location_obj.longitude = request.data.get('longitude')
-        location_obj.save()
-        
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        if serializer.is_valid():
+            location_obj.locations = serializer.validated_data.get('locations')
+            location_obj.latitude = serializer.validated_data.get('latitude')
+            location_obj.longitude = serializer.validated_data.get('longitude')
+            location_obj.save()
+
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 # user management
 
 class GetuserList(generics.ListAPIView):
