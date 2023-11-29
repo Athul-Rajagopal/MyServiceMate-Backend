@@ -222,7 +222,7 @@ class PaymentRequestSentView(generics.CreateAPIView):
         
         amount = request.data.get('amount')
         booking_data = request.data.get('booking')
-        print('booking_data',booking_data)
+        # print('booking_data',booking_data)
         user_id = booking_data.get('user')
         booking_id = booking_data.get('id')
         worker = self.request.user

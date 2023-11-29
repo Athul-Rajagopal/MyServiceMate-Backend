@@ -94,8 +94,8 @@ class Payment(models.Model):
     Bookings = models.ForeignKey(Bookings, on_delete=models.CASCADE)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     date = models.DateTimeField(auto_now_add=True, blank=True , null=True)
-    payed_date_time = models.DateTimeField(auto_now_add=True, blank=True , null=True)
-    received_date_time = models.DateTimeField(auto_now_add=True, blank=True , null=True)
+    payed_date_time = models.DateTimeField(blank=True , null=True)
+    received_date_time = models.DateTimeField(blank=True , null=True)
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='payments_as_user')
     worker = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='payments_as_worker')
     is_recieved = models.BooleanField(default=False)  # Add the payment status field
