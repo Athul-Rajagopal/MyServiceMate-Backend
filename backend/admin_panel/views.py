@@ -155,11 +155,20 @@ class ServiceEditView(APIView):
         service_serializer = ServicesSerializer(service_obj)
         
         service_locations = ServiceLocation.objects.filter(services=service_obj)
-        service_location_serializer = ServiceLocationSerializer(service_locations, many=True)
+        service_location_data = []
+
+        for service_location in service_locations:
+            location_data = {
+                "id": service_location.locations.id,
+                "location_name": service_location.locations.locations,
+                "latitude": service_location.locations.latitude,
+                "longitude": service_location.locations.longitude
+            }
+            service_location_data.append(location_data)
         
         data = {
             "service": service_serializer.data,
-            "locations": service_location_serializer.data
+            "locations": service_location_data
         }
         
         return Response(data)
