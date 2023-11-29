@@ -145,6 +145,27 @@ class ServiceDeleteView(generics.DestroyAPIView):
         instance.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)   
 
+class ServiceEditView(APIView):
+    def get(self, request, service_id):
+        try:
+            service_obj = Services.objects.get(id=int(service_id))
+        except Services.DoesNotExist:
+            return Response({"error": "Service not found"}, status=404)
+
+        service_serializer = ServicesSerializer(service_obj)
+        
+        service_locations = ServiceLocation.objects.filter(services=service_obj)
+        service_location_serializer = ServiceLocationSerializer(service_locations, many=True)
+        
+        data = {
+            "service": service_serializer.data,
+            "locations": service_location_serializer.data
+        }
+        
+        return Response(data)
+        
+            
+        
 
 # Location management
 

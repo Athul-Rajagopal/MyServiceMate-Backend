@@ -18,4 +18,5 @@ urlpatterns = [
     path('worker-approval-requests-count/',PendingApprovalRequestCount.as_view(),name='worker-approval-requests-count'),
     path('transactions/',Transactions.as_view(),name='transactions'),
     path('admin-wallet/',AdminWalletView.as_view(),name='admin-wallet'),
+    path('edit-service/<int:service_id>/',ServiceEditView.as_view(),name='edit-service')
 ]
