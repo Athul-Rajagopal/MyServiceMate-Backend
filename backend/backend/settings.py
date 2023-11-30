@@ -207,7 +207,7 @@ CORS_ALLOW_METHODS = [
 
 STRIPE_SECRET_KEY = 'sk_test_51OCehdSCnIQ43r0B90LEGqdn6V1uaMGSLT0qCIIEgbsrvYhQ38NOTGOdNOmWFw8UhHBunYOfXJj3dOFS8adPfGzz00pKrFAbtU'
 SITE_URL = 'https://my-service-mate.vercel.app/app/pending-payments'
-STRIPE_WEBHOOK_SECRET = 'we_1OHILCSCnIQ43r0Bgi9c4jdI'
+STRIPE_WEBHOOK_SECRET = 'whsec_0WMVxHfFQCMyhDoCxzbkHWadtGfuZvvR'
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'

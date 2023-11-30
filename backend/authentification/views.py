@@ -479,6 +479,9 @@ def stripe_webhook_view(request):
     
     print('Payload:', payload)
     print('Signature Header:', sig_header)
+    
+    logger.debug(f"Request Headers: {request.headers}")
+    logger.debug(f"Request Body: {request.body}")
 
     try:
         event = stripe.Webhook.construct_event(payload, sig_header, endpoint)
