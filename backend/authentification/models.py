@@ -107,7 +107,7 @@ class Payment(models.Model):
 
 
 class WorkerWallet(models.Model):
-    Worker = models.ForeignKey(CustomUser,on_delete=models.CASCADE)
+    Worker = models.OneToOneField(CustomUser,on_delete=models.CASCADE)
     wallet_amount = models.IntegerField()
     
     def __str__(self):

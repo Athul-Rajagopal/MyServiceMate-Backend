@@ -523,9 +523,15 @@ def stripe_webhook_view(request):
         payment_obj.payment_id = payment_id
         payment_obj.save()
         
-        wallet_amount = float(amount)-50
-        worker_wallet = WorkerWallet.objects.create(Worker = payment_obj.worker, wallet_amount = wallet_amount)
-        worker_wallet.save()
+        wallet_amount = float(amount) - 50
+        worker = payment_obj.worker
+        wallet, created = WorkerWallet.objects.get_or_create(Worker=worker, defaults={'wallet_amount': wallet_amount})
+
+        if not created:
+            # Wallet exists, update the wallet amount
+            wallet.wallet_amount += wallet_amount
+            wallet.save()
+
         
         # admin = CustomUser.objects.get(is_superuser=True)
         date = timezone.now()

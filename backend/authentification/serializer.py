@@ -113,7 +113,7 @@ class PaymentSerializer(serializers.ModelSerializer):
         fields = '__all__'
         
 class WalletSerializer(serializers.ModelSerializer):
-    worker = UserSerializers()
+    Worker = UserSerializers()
     class Meta:
         model = WorkerWallet
         fields = '__all__'
