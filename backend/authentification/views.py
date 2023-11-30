@@ -26,6 +26,7 @@ from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import redirect
 from django.utils import timezone
+import logging
 
 
 
@@ -459,6 +460,7 @@ class StripeCheckoutView(APIView):
             )
   
  
+logger = logging.getLogger(__name__)
 @csrf_exempt 
 def stripe_webhook_view(request):
     print('#############################################')
@@ -479,14 +481,12 @@ def stripe_webhook_view(request):
     print('Signature Header:', sig_header)
 
     try:
-        event = stripe.Webhook.construct_event(
-        payload, sig_header, endpoint
-        )
+        event = stripe.Webhook.construct_event(payload, sig_header, endpoint)
     except ValueError as e:
-        # Invalid payload
+        logger.error('ValueError occurred: %s', e)
         return HttpResponse(status=400)
     except stripe.error.SignatureVerificationError as e:
-        # Invalid signature
+        logger.error('SignatureVerificationError occurred: %s', e)
         return HttpResponse(status=400)
     
     # Handle the checkout.session.completed event

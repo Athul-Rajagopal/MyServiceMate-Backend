@@ -63,7 +63,7 @@ CORS_ALLOWED_ORIGINS = [
     'https://3.110.119.94',
     'http://myservicemate.online',
     'https://myservicemate.online',
-    'https://my-service-mate.vercel.app',
+    # 'https://my-service-mate.vercel.app',
 ]
 
 CSRF_TRUSTED_ORIGINS = [ "https://myservicemate.online",
