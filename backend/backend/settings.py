@@ -54,7 +54,7 @@ CORS_ORIGIN_ALLOW_ALL = False
 CORS_ALLOW_ALL_ORIGINS = True
 
 CORS_ALLOWED_ORIGINS = [
-    'http://localhost:5173',  # Add the origin of your frontend application
+    'http://127.0.0.1:5173',  # Add the origin of your frontend application
     'https://checkout.stripe.com',
     'http://0.0.0.0:9000',
     'https://0.0.0.0:9000',
@@ -62,7 +62,8 @@ CORS_ALLOWED_ORIGINS = [
     'http://3.110.119.94',
     'https://3.110.119.94',
     'http://myservicemate.online',
-    'https://myservicemate.online'
+    'https://myservicemate.online',
+    'https://my-service-mate.vercel.app',
 ]
 
 CSRF_TRUSTED_ORIGINS = [ "https://myservicemate.online",
@@ -75,6 +76,7 @@ CSRF_TRUSTED_ORIGINS = [ "https://myservicemate.online",
                         'http://localhost:5173',  
                         'http://65.2.189.73/',
                     'https://65.2.189.73/',
+                    'https://my-service-mate.vercel.app',
 ]
 
 CORS_ALLOW_CREDENTIALS = True
