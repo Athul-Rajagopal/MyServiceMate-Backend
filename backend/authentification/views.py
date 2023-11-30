@@ -286,6 +286,17 @@ class ListBookings(generics.ListAPIView):
         
         return bookings
 
+class CancelBooking(APIView):
+    def post(self,request):
+        booking_id = request.data.get('booking_id')
+
+        try:
+            booking = Bookings.objects.get(id=int(booking_id), is_completed=False)
+            booking.delete()
+            return Response({"message": "Booking removed successfully"}, status=status.HTTP_200_OK)
+        except Bookings.DoesNotExist:
+            return Response({"message": "Booking not found or already completed"}, status=status.HTTP_404_NOT_FOUND)
+
 #Password  
     
 class ForgotPassword(APIView):

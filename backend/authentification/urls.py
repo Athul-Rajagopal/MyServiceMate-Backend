@@ -22,5 +22,6 @@ urlpatterns = [
     path('pending-payments/<int:user_id>/',GetPendingPayments.as_view(),name='pending-payments'),
     path('payment-history/<int:user_id>/',GetPaymentHistory.as_view(), name='payment-history'),
     path('checkout/',StripeCheckoutView.as_view(),name='checkout'),
-    path('webhook/',stripe_webhook_view,name='webhook')
+    path('webhook/',stripe_webhook_view,name='webhook'),
+    path('cancel-booking',CancelBooking.as_view(),name='cancel_booking'),
 ]
