@@ -20,4 +20,5 @@ urlpatterns = [
     path('admin-wallet/',AdminWalletView.as_view(),name='admin-wallet'),
     path('edit-service/<int:service_id>/',ServiceEditView.as_view(),name='edit-service'),
     path('edit-location/<int:location_id>',EditLocation.as_view(),name='edit-location'),
+    path('list-withdrwal-requests/',ListWithdrawalRequests.as_view(),name='list_withdrqwal_requests'),
 ]

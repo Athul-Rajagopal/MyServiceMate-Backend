@@ -126,3 +126,12 @@ class AdminWallet(models.Model):
     
     def __str__(self):
         return f"-{self.wallet_amount}"
+    
+class WalletWithdrawRequest(models.model):
+    worker = models.ForeignKey(CustomUser,on_delete=models.CASCADE)
+    amount = models.IntegerField()
+    bank_account_no = models.CharField(max_length=200)
+    ifsc_code = models.CharField(max_length=200)
+    is_transferred = models.BooleanField(default=false)
+    date = models.DateTimeField(auto_now_add=True, blank=True, null=True)
+    

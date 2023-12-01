@@ -128,4 +128,9 @@ class AdminWalletSerializer(serializers.ModelSerializer):
     def get_total_wallet_amount(self, obj):
         # Call the get_total_wallet_amount method from the model
         return AdminWallet.get_total_wallet_amount()
-#########################
+
+class walletWithdrawalSerializer(serializers.ModelSerializer):
+    worker = UserSerializers()
+    class Meta:
+        model = WalletWithdrawRequest
+        fields = '__all__'

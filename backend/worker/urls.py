@@ -16,6 +16,7 @@ urlpatterns = [
     path('reject-booking/<int:booking_id>/',RejectBookings.as_view(),name='reject-booking'),
     path('payment-request/',PaymentRequestSentView.as_view(), name='payment-request'),
     path('worker-wallet/<int:worker_id>/',WalletDetails.as_view(), name='worker_wallet'),
-    path('worker-transactions/<int:worker_id>/',WorkerTransactions.as_view(),name='worker_transactions')
+    path('worker-transactions/<int:worker_id>/',WorkerTransactions.as_view(),name='worker_transactions'),
+    path('withdrwal-request/<int:worker_id>/',WorkerWalletWithdrawRequest.as_view(),name='withdrawal request')
 
 ]

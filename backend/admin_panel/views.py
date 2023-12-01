@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from authentification.serializer import UserSerializers
-from authentification.models import Services,WorkerDetails,CustomUser,FielfOfExpertise,Locations,WorkerBookings,Bookings,Payment,AdminWallet,ServiceLocation
-from authentification.serializer import UserSerializers,WorkerDetailsSerializer,ServicesSerializer,LocationsSerializer,BookingSerializer,PaymentSerializer,AdminWalletSerializer,ServiceLocationSerializer
+from authentification.models import Services,WorkerDetails,CustomUser,FielfOfExpertise,Locations,WorkerBookings,Bookings,Payment,AdminWallet,ServiceLocation,WalletWithdrawRequest
+from authentification.serializer import UserSerializers,WorkerDetailsSerializer,ServicesSerializer,LocationsSerializer,BookingSerializer,PaymentSerializer,AdminWalletSerializer,ServiceLocationSerializer,walletWithdrawalSerializer
 from rest_framework.views import APIView
 from rest_framework import generics
 from rest_framework.response import Response
@@ -360,3 +360,7 @@ class AdminWalletView(generics.ListAPIView):
         # Pass the total_wallet_amount to the serializer context
         total_wallet_amount = AdminWallet.get_total_wallet_amount()
         return {'total_wallet_amount': total_wallet_amount}
+    
+class ListWithdrawalRequests(generics.ListAPIView):
+    queryset = WalletWithdrawRequest.objects.all()
+    serializer_class = walletWithdrawalSerializer

@@ -1,6 +1,6 @@
 from django.shortcuts import render
-from authentification.serializer import ServicesSerializer,FieldOfExperticeSerializer,WorkerDetailsUpdateLocationSerializer,WorkerDetailsUpdatePhoneNumberSerializer,BookingSerializer,ReviewSerializer,PaymentSerializer,WalletSerializer
-from authentification.models import Services,WorkerDetails,CustomUser,FielfOfExpertise,Locations,Bookings,WorkerBookings,Review,WorkerReview,Payment,WorkerWallet
+from authentification.serializer import ServicesSerializer,FieldOfExperticeSerializer,WorkerDetailsUpdateLocationSerializer,WorkerDetailsUpdatePhoneNumberSerializer,BookingSerializer,ReviewSerializer,PaymentSerializer,WalletSerializer,walletWithdrawalSerializer
+from authentification.models import Services,WorkerDetails,CustomUser,FielfOfExpertise,Locations,Bookings,WorkerBookings,Review,WorkerReview,Payment,WorkerWallet,WalletWithdrawRequest
 from rest_framework.views import APIView
 from rest_framework import generics
 from rest_framework.response import Response
@@ -271,3 +271,25 @@ class WorkerTransactions(generics.ListAPIView):
         worker_id = self.kwargs['worker_id']
         worker = CustomUser.objects.get(id=worker_id)
         return Payment.objects.filter(worker=worker, is_recieved=True)
+    
+    
+class WorkerWalletWithdrawRequest(APIVew):
+    
+    def post(self, request, worker_id):
+        worker = CustomUser.objects.get(id=int(worker_id))
+        amount = int(request.data.get('amount'))
+        worker_wallet = WorkerWallet.objects.get(worker=worker)
+        if amount > worker_wallet.wallet_amount:
+            return Response({"error": "Amount exceeds wallet balance"}, status=status.HTTP_400_BAD_REQUEST)
+        account_number = request.data.get('accountNumber')
+        ifsc_code = request.data.get('ifscCode')
+        
+        new_request = WalletWithdrawRequest.objects.create(worker=worker, amount=amount,
+                                                           bank_account_no=account_number,
+                                                           ifsc_code=ifsc_code)
+        new_request.save()
+        
+        return Response({"message": "Withdrawal request successful"},status=status.HTTP_200_OK)
+        
+        
+        
