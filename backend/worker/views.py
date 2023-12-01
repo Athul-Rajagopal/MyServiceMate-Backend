@@ -14,6 +14,7 @@ from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 from backend import settings
 from django.utils import timezone
+import logging
 
 
 # Create your views here.
@@ -273,6 +274,7 @@ class WorkerTransactions(generics.ListAPIView):
         return Payment.objects.filter(worker=worker, is_recieved=True)
     
     
+logger = logging.getLogger(__name__)
 class WorkerWalletWithdrawRequest(APIView):
     
     def post(self, request, worker_id):
