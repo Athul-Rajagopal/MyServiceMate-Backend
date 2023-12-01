@@ -273,7 +273,7 @@ class WorkerTransactions(generics.ListAPIView):
         return Payment.objects.filter(worker=worker, is_recieved=True)
     
     
-class WorkerWalletWithdrawRequest(APIVew):
+class WorkerWalletWithdrawRequest(APIView):
     
     def post(self, request, worker_id):
         worker = CustomUser.objects.get(id=int(worker_id))
