@@ -1,6 +1,6 @@
 from rest_framework_simplejwt.serializers import TokenRefreshSerializer
 from rest_framework import serializers
-from .models import CustomUser,Locations,Services,WorkerDetails,FielfOfExpertise,ServiceLocation,Bookings,WorkerBookings,Review,WorkerReview,Payment,WorkerWallet,AdminWallet
+from .models import CustomUser,Locations,Services,WorkerDetails,FielfOfExpertise,ServiceLocation,Bookings,WorkerBookings,Review,WorkerReview,Payment,WorkerWallet,AdminWallet,WalletWithdrawRequest
 
 
 
