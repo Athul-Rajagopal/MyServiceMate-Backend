@@ -298,6 +298,8 @@ class WorkerWalletWithdrawRequest(APIView):
                                                             bank_account_no=account_number,
                                                             ifsc_code=ifsc_code)
             new_request.save()
+            worker_wallet.wallet_amount -= amount
+            worker_wallet.save()
             
             return Response({"message": "Withdrawal request successful"},status=status.HTTP_200_OK)
         except CustomUser.DoesNotExist as e:
