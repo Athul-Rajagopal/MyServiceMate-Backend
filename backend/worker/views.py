@@ -278,7 +278,7 @@ class WorkerWalletWithdrawRequest(APIView):
     def post(self, request, worker_id):
         worker = CustomUser.objects.get(id=int(worker_id))
         amount = int(request.data.get('amount'))
-        worker_wallet = WorkerWallet.objects.get(worker=worker)
+        worker_wallet = WorkerWallet.objects.get(Worker=worker)
         if amount > worker_wallet.wallet_amount:
             return Response({"error": "Amount exceeds wallet balance"}, status=status.HTTP_400_BAD_REQUEST)
         account_number = request.data.get('accountNumber')
