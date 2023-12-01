@@ -281,9 +281,16 @@ class WorkerWalletWithdrawRequest(APIView):
         try:
             worker = CustomUser.objects.get(id=int(worker_id))
             amount = int(request.data.get('amount'))
-            worker_wallet = WorkerWallet.objects.filter(Worker=worker)
-            if amount > worker_wallet.wallet_amount:
-                return Response({"error": "Amount exceeds wallet balance"}, status=status.HTTP_400_BAD_REQUEST)
+            worker_wallets = WorkerWallet.objects.filter(Worker=worker)
+            
+            if worker_wallets.exists():
+                for worker_wallet in worker_wallets:
+                    if amount > worker_wallet.wallet_amount:
+                        return Response({"error": "Amount exceeds wallet balance"}, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                return Response({"error": "Worker wallet not found"}, status=status.HTTP_404_NOT_FOUND)
+            
+
             account_number = request.data.get('accountNumber')
             ifsc_code = request.data.get('ifscCode')
             
