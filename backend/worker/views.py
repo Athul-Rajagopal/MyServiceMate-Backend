@@ -276,20 +276,28 @@ class WorkerTransactions(generics.ListAPIView):
 class WorkerWalletWithdrawRequest(APIView):
     
     def post(self, request, worker_id):
-        worker = CustomUser.objects.get(id=int(worker_id))
-        amount = int(request.data.get('amount'))
-        worker_wallet = WorkerWallet.objects.get(Worker=worker)
-        if amount > worker_wallet.wallet_amount:
-            return Response({"error": "Amount exceeds wallet balance"}, status=status.HTTP_400_BAD_REQUEST)
-        account_number = request.data.get('accountNumber')
-        ifsc_code = request.data.get('ifscCode')
-        
-        new_request = WalletWithdrawRequest.objects.create(worker=worker, amount=amount,
-                                                           bank_account_no=account_number,
-                                                           ifsc_code=ifsc_code)
-        new_request.save()
-        
-        return Response({"message": "Withdrawal request successful"},status=status.HTTP_200_OK)
+        try:
+            worker = CustomUser.objects.get(id=int(worker_id))
+            amount = int(request.data.get('amount'))
+            worker_wallet = WorkerWallet.objects.filter(Worker=worker)
+            if amount > worker_wallet.wallet_amount:
+                return Response({"error": "Amount exceeds wallet balance"}, status=status.HTTP_400_BAD_REQUEST)
+            account_number = request.data.get('accountNumber')
+            ifsc_code = request.data.get('ifscCode')
+            
+            new_request = WalletWithdrawRequest.objects.create(worker=worker, amount=amount,
+                                                            bank_account_no=account_number,
+                                                            ifsc_code=ifsc_code)
+            new_request.save()
+            
+            return Response({"message": "Withdrawal request successful"},status=status.HTTP_200_OK)
+        except CustomUser.DoesNotExist as e:
+            logger.error(f"CustomUser with id={worker_id} does not exist: {e}")
+            return JsonResponse({"error": "CustomUser does not exist"}, status=status.HTTP_404_NOT_FOUND)
+
+        except Exception as e:
+            logger.exception(f"Error occurred: {e}")
+            return JsonResponse({"error": "Internal Server Error"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
         
         
