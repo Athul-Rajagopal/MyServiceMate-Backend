@@ -59,9 +59,9 @@ class RegitrationView(APIView):
     def post(self, request):
 
         if CustomUser.objects.filter(username=request.data['username']).exists():
-            return Response({'error': 'Username already exists'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': 'Username already exists', 'status': 'error_username'}, status=status.HTTP_400_BAD_REQUEST)
         if CustomUser.objects.filter(email=request.data['email']).exists():
-            return Response({'error': 'Email already exists'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': 'Email already exists', 'status': 'error_email'}, status=status.HTTP_400_BAD_REQUEST)
         serializer = UserSerializers(data=request.data)
         serializer.is_valid(raise_exception=True)
         username = serializer.validated_data.get('username')
