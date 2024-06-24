@@ -27,10 +27,9 @@ Myservicemate is a full-stack project that provides a comprehensive online booki
 
 ## Installation
 1. Clone this repository to your local machine:
-
-   ```shell
-   git clone https://github.com/Athul-Rajagopal/MyServiceMate-Frontend.git
-   ```
+```shell
+https://github.com/Athul-Rajagopal/MyServiceMate-Backend.git
+```
 
 2. Navigate to the project directory
 ```
