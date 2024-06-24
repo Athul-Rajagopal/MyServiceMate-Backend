@@ -31,23 +31,18 @@ Myservicemate is a full-stack project that provides a comprehensive online booki
 https://github.com/Athul-Rajagopal/MyServiceMate-Backend.git
 ```
 
-2. Navigate to the project directory
-```
-cd MyServiceMate
-```
-
-3. Create and activate environment
+2. Create and activate environment
 ```
 python -m venv env
 \env\Scripts\activate
 ```
 
-4. Install the dependecies
+3. Install the dependecies
 ```bash
 pip install requirements.txt
 ```
 
-5. Run the backend
+4. Run the backend
 ```shell
 python manage.py runserver
 ```
